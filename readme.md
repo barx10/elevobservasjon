@@ -21,9 +21,9 @@ Her er et glimt av dashboardet i TeacherTracker:
 
 ---
 
-## ⚙️ Kom i gang
+## 🧪 Prøv det selv
 
-### 1. Installer avhengigheter
-
-```bash
-pip install -r requirements.txt
+1. Klon repoet
+2. Installer avhengigheter
+3. Kjør appen med `python3 app.py`
+4. Åpne i nettleseren på `http://127.0.0.1:5000`
