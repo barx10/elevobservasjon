@@ -26,22 +26,28 @@
                 <h6 class="card-title">Observasjonskategorier:</h6>
                 <div class="row text-center">
                     <div class="col-6 col-md">
-                        <span class="badge bg-success p-2">Deltar muntlig</span>
+                        <span class="badge bg-primary p-2">Stiller spørsmål</span>
                     </div>
                     <div class="col-6 col-md">
-                        <span class="badge bg-info p-2">Følger med</span>
+                        <span class="badge bg-info p-2">Samarbeider</span>
                     </div>
                     <div class="col-6 col-md">
-                        <span class="badge bg-secondary p-2">Er stille</span>
+                        <span class="badge bg-success p-2">Tar initiativ</span>
                     </div>
                     <div class="col-6 col-md">
-                        <span class="badge bg-warning p-2">Urolig</span>
+                        <span class="badge bg-secondary p-2">Ferdigstiller oppgaver</span>
                     </div>
                     <div class="col-6 col-md">
-                        <span class="badge bg-danger p-2">Bortforklaring</span>
+                        <span class="badge bg-warning p-2">Behøver veiledning</span>
                     </div>
                     <div class="col-6 col-md">
-                        <span class="badge bg-dark p-2">Egne notater</span>
+                        <span class="badge bg-danger p-2">Er distrahert</span>
+                    </div>
+                    <div class="col-6 col-md">
+                        <span class="badge bg-dark p-2">Viser glede/interesse</span>
+                    </div>
+                    <div class="col-6 col-md">
+                        <span class="badge bg-light text-dark p-2">Tilbaketrukket</span>
                     </div>
                 </div>
             </div>
@@ -59,42 +65,53 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <button class="btn btn-success observation-btn" 
+                        <button class="btn btn-primary observation-btn" 
                                 data-student-id="{{ student.id }}" 
-                                data-observation="deltar_muntlig">
-                            <i class="fas fa-comments me-1"></i>
-                            Deltar muntlig
+                                data-observation="stiller_sporsmal">
+                            <i class="fas fa-question-circle me-1"></i>
+                            Stiller spørsmål
                         </button>
                         <button class="btn btn-info observation-btn" 
                                 data-student-id="{{ student.id }}" 
-                                data-observation="folger_med">
-                            <i class="fas fa-eye me-1"></i>
-                            Følger med
+                                data-observation="samarbeider_med_andre">
+                            <i class="fas fa-users me-1"></i>
+                            Samarbeider
+                        </button>
+                        <button class="btn btn-success observation-btn" 
+                                data-student-id="{{ student.id }}" 
+                                data-observation="tar_initiativ">
+                            <i class="fas fa-bolt me-1"></i>
+                            Tar initiativ
                         </button>
                         <button class="btn btn-secondary observation-btn" 
                                 data-student-id="{{ student.id }}" 
-                                data-observation="er_stille">
-                            <i class="fas fa-volume-mute me-1"></i>
-                            Er stille
+                                data-observation="ferdigstiller_oppgaver">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Ferdigstiller oppgaver
                         </button>
                         <button class="btn btn-warning observation-btn" 
                                 data-student-id="{{ student.id }}" 
-                                data-observation="urolig">
-                            <i class="fas fa-exclamation-triangle me-1"></i>
-                            Urolig
+                                data-observation="behover_veiledning">
+                            <i class="fas fa-hands-helping me-1"></i>
+                            Behøver veiledning
                         </button>
                         <button class="btn btn-danger observation-btn" 
                                 data-student-id="{{ student.id }}" 
-                                data-observation="bortforklaring">
-                            <i class="fas fa-mobile-alt me-1"></i>
-                            Bortforklaring
+                                data-observation="er_distrahert">
+                            <i class="fas fa-random me-1"></i>
+                            Er distrahert
                         </button>
                         <button class="btn btn-dark observation-btn" 
                                 data-student-id="{{ student.id }}" 
-                                data-observation="egne_notater"
-                                onclick="showNotesModal({{ student.id }}, '{{ student.name }}')">
-                            <i class="fas fa-sticky-note me-1"></i>
-                            Egne notater
+                                data-observation="viser_glede_interesse">
+                            <i class="fas fa-smile-beam me-1"></i>
+                            Viser glede/interesse
+                        </button>
+                        <button class="btn btn-light text-dark observation-btn" 
+                                data-student-id="{{ student.id }}" 
+                                data-observation="tilbaketrukket">
+                            <i class="fas fa-user-secret me-1"></i>
+                            Tilbaketrukket
                         </button>
                     </div>
                 </div>
