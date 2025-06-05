@@ -169,14 +169,19 @@ def record_observation():
     """Record an observation for a student"""
     student_id = request.form.get('student_id')
     observation_type = request.form.get('observation_type')
+    notes = request.form.get('notes', '').strip()
     
     if not student_id or not observation_type:
         return jsonify({'success': False, 'message': 'Manglende data'})
     
     # Validate observation type
-    valid_types = ['deltar_muntlig', 'folger_med', 'er_stille', 'urolig', 'bortforklaring']
+    valid_types = ['deltar_muntlig', 'folger_med', 'er_stille', 'urolig', 'bortforklaring', 'egne_notater']
     if observation_type not in valid_types:
         return jsonify({'success': False, 'message': 'Ugyldig observasjonstype'})
+    
+    # For custom notes, require notes text
+    if observation_type == 'egne_notater' and not notes:
+        return jsonify({'success': False, 'message': 'Notater er påkrevd for egne notater'})
     
     student = Student.query.get(student_id)
     if not student:
@@ -186,6 +191,7 @@ def record_observation():
     observation = Observation(
         student_id=student_id,
         observation_type=observation_type,
+        notes=notes if notes else None,
         timestamp=datetime.now()
     )
     

@@ -34,6 +34,7 @@ class Observation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
     observation_type = db.Column(db.String(50), nullable=False)
+    notes = db.Column(db.Text, nullable=True)  # For custom notes
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Valid observation types:
@@ -42,6 +43,7 @@ class Observation(db.Model):
     # - er_stille: Student is quiet
     # - urolig: Student is restless
     # - bortforklaring: Student is distracted/off-task
+    # - egne_notater: Custom notes
     
     def __repr__(self):
         return f'<Observation {self.observation_type} for {self.student.name}>'
@@ -54,6 +56,7 @@ class Observation(db.Model):
             'folger_med': 'Følger med',
             'er_stille': 'Er stille',
             'urolig': 'Urolig',
-            'bortforklaring': 'Bortforklaring/avledning'
+            'bortforklaring': 'Bortforklaring/avledning',
+            'egne_notater': 'Egne notater'
         }
         return display_map.get(self.observation_type, self.observation_type)

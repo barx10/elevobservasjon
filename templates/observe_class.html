@@ -37,8 +37,11 @@
                     <div class="col-6 col-md">
                         <span class="badge bg-warning p-2">Urolig</span>
                     </div>
-                    <div class="col-12 col-md">
+                    <div class="col-6 col-md">
                         <span class="badge bg-danger p-2">Bortforklaring</span>
+                    </div>
+                    <div class="col-6 col-md">
+                        <span class="badge bg-dark p-2">Egne notater</span>
                     </div>
                 </div>
             </div>
@@ -86,11 +89,41 @@
                             <i class="fas fa-mobile-alt me-1"></i>
                             Bortforklaring
                         </button>
+                        <button class="btn btn-dark observation-btn" 
+                                data-student-id="{{ student.id }}" 
+                                data-observation="egne_notater"
+                                onclick="showNotesModal({{ student.id }}, '{{ student.name }}')">
+                            <i class="fas fa-sticky-note me-1"></i>
+                            Egne notater
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     {% endfor %}
+</div>
+
+<!-- Notes Modal -->
+<div class="modal fade" id="notesModal" tabindex="-1" aria-labelledby="notesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notesModalLabel">Egne notater</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="notesStudentName"></p>
+                <div class="mb-3">
+                    <label for="notesText" class="form-label">Notater:</label>
+                    <textarea class="form-control" id="notesText" rows="4" placeholder="Skriv dine notater her..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-primary" onclick="saveNotes()">Lagre notater</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Feedback area -->
@@ -105,6 +138,50 @@
 
 {% block scripts %}
 <script>
+let currentStudentId = null;
+let currentStudentName = null;
+
+function showNotesModal(studentId, studentName) {
+    currentStudentId = studentId;
+    currentStudentName = studentName;
+    document.getElementById('notesStudentName').textContent = `Notater for: ${studentName}`;
+    document.getElementById('notesText').value = '';
+    const modal = new bootstrap.Modal(document.getElementById('notesModal'));
+    modal.show();
+}
+
+function saveNotes() {
+    const notes = document.getElementById('notesText').value.trim();
+    if (!notes) {
+        showFeedback('Vennligst skriv inn notater', 'danger');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('student_id', currentStudentId);
+    formData.append('observation_type', 'egne_notater');
+    formData.append('notes', notes);
+    
+    fetch('/record_observation', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showFeedback(data.message, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('notesModal'));
+            modal.hide();
+        } else {
+            showFeedback(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showFeedback('En feil oppstod', 'danger');
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const observationButtons = document.querySelectorAll('.observation-btn');
     const feedbackToast = new bootstrap.Toast(document.getElementById('feedback-toast'));
