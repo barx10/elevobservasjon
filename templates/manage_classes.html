@@ -20,7 +20,7 @@
                 <h5><i class="fas fa-plus me-2"></i>Legg til ny klasse</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('add_class') }}">
+                <form method="POST" action="{{ url_for('add_class') }}" onsubmit="console.log('Submitting add_class form');">
                     <div class="mb-3">
                         <label for="class_name" class="form-label">Klassenavn</label>
                         <input type="text" class="form-control" id="class_name" name="class_name" 
@@ -62,7 +62,7 @@
                     </div>
                     <div class="card-body">
                         <!-- Add student form -->
-                        <form method="POST" action="{{ url_for('add_student') }}" class="mb-3">
+                        <form method="POST" action="{{ url_for('add_student') }}" class="mb-3" onsubmit="console.log('Submitting add_student form for class {{ class.id }}');">
                             <input type="hidden" name="class_id" value="{{ class.id }}">
                             <div class="input-group">
                                 <input type="text" class="form-control" name="student_name" 

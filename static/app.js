@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         form.addEventListener('submit', function(e) {
+            console.log('Form submit event triggered for:', form.action);
             const requiredFields = form.querySelectorAll('[required]');
             let hasErrors = false;
 
@@ -72,18 +73,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!field.value.trim()) {
                     field.classList.add('is-invalid');
                     hasErrors = true;
+                    console.log('Validation error for field:', field.name);
                 } else {
                     field.classList.remove('is-invalid');
                 }
             });
 
             if (hasErrors) {
+                console.log('Preventing form submission due to validation errors');
                 e.preventDefault();
                 const firstError = form.querySelector('.is-invalid');
                 if (firstError) {
                     firstError.focus();
                     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
+            } else {
+                console.log('Form validation passed, allowing submission');
             }
         });
 
