@@ -1,19 +1,29 @@
-# TeacherTracker
+# 🧑‍🏫 TeacherTracker
 
-Et enkelt observasjonsverktøy for lærere som ønsker å registrere elevers engasjement i sanntid under undervisning.
+Et enkelt observasjonsverktøy for lærere som ønsker å registrere elevers engasjement i sanntid.
+
+---
 
 ## 🚀 Funksjoner
 
 - Registrer klasser og elever
-- Logg observasjoner med ett klikk (f.eks. *Deltar muntlig*, *Stille*, *Urolig*)
-- Lagres lokalt i SQLite
-- Oversikt over tidligere observasjoner per elev
-- Enkel og mobilvennlig grensesnitt
+- Start observasjon med ett klikk
+- Se siste aktivitet og statistikk
+- All data lagres lokalt (ingen skytjenester)
 
-## 🛠️ Kom i gang
+---
 
-### 1. Klon repoet
+## 🖼️ Skjermbilde
+
+Her er et glimt av dashboardet i TeacherTracker:
+
+![Skjermbilde av dashboard](static/screenshot.png)
+
+---
+
+## ⚙️ Kom i gang
+
+### 1. Installer avhengigheter
 
 ```bash
-git clone https://github.com/barx10/TeacherTracker.git
-cd TeacherTracker
+pip install -r requirements.txt
