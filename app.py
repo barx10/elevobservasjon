@@ -224,11 +224,14 @@ def statistics():
     for student in students:
         stats = {
             'student': student,
-            'deltar_muntlig': Observation.query.filter_by(student_id=student.id, observation_type='deltar_muntlig').count(),
-            'folger_med': Observation.query.filter_by(student_id=student.id, observation_type='folger_med').count(),
-            'er_stille': Observation.query.filter_by(student_id=student.id, observation_type='er_stille').count(),
-            'urolig': Observation.query.filter_by(student_id=student.id, observation_type='urolig').count(),
-            'bortforklaring': Observation.query.filter_by(student_id=student.id, observation_type='bortforklaring').count(),
+            'stiller_sporsmal': Observation.query.filter_by(student_id=student.id, observation_type='stiller_sporsmal').count(),
+            'samarbeider_med_andre': Observation.query.filter_by(student_id=student.id, observation_type='samarbeider_med_andre').count(),
+            'tar_initiativ': Observation.query.filter_by(student_id=student.id, observation_type='tar_initiativ').count(),
+            'ferdigstiller_oppgaver': Observation.query.filter_by(student_id=student.id, observation_type='ferdigstiller_oppgaver').count(),
+            'behover_veiledning': Observation.query.filter_by(student_id=student.id, observation_type='behover_veiledning').count(),
+            'er_distrahert': Observation.query.filter_by(student_id=student.id, observation_type='er_distrahert').count(),
+            'viser_glede_interesse': Observation.query.filter_by(student_id=student.id, observation_type='viser_glede_interesse').count(),
+            'tilbaketrukket': Observation.query.filter_by(student_id=student.id, observation_type='tilbaketrukket').count(),
         }
         stats['total'] = sum([stats[key] for key in stats if key != 'student'])
         student_stats.append(stats)
@@ -247,4 +250,4 @@ def privacy_info():
     return render_template('privacy_info.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5050, debug=True)
