@@ -1,0 +1,29 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Miljøfiler
+.env
+*.env
+
+# Virtuelle miljøer
+venv/
+.venv/
+
+# Editorfiler
+.vscode/
+.idea/
+
+# Operativsystem-filer
+.DS_Store
+Thumbs.db
+
+# Flask-debug
+instance/
+*.log
+
+# Replit
+.replit
+*.nix
