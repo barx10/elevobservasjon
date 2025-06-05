@@ -284,17 +284,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (downloadBtn) {
         downloadBtn.addEventListener('click', function() {
             if (window.studentStatsChart) {
-                // Eksporter graf med hvit bakgrunn (manuell metode)
+                // Eksporter graf med hvit bakgrunn og fast størrelse (800x400 px)
                 const chart = window.studentStatsChart;
-                const canvas = chart.canvas;
-                // Lag et nytt canvas med hvit bakgrunn
+                const origCanvas = chart.canvas;
+                // Lag et nytt, større canvas
                 const exportCanvas = document.createElement('canvas');
-                exportCanvas.width = canvas.width;
-                exportCanvas.height = canvas.height;
+                exportCanvas.width = 800;
+                exportCanvas.height = 400;
                 const ctx = exportCanvas.getContext('2d');
+                // Hvit bakgrunn
                 ctx.fillStyle = '#fff';
                 ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-                ctx.drawImage(canvas, 0, 0);
+                // Tegn grafen på nytt på eksport-canvas
+                // Skaler original canvas inn i eksport-canvas
+                ctx.drawImage(origCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
                 const url = exportCanvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.href = url;
@@ -361,8 +364,9 @@ function showStudentStats(studentId, studentName) {
     fetch(`/student_observation_history/${studentId}`)
         .then(response => response.json())
         .then(data => {
-            console.log('API-data for elevutvikling:', data); // Logg data til konsoll
             renderStudentStatsChart(data);
+            // Tving resize etter at modal er synlig
+            setTimeout(() => forceResizeChart(window.studentStatsChart), 300);
         })
         .catch(error => {
             console.error('Feil ved henting av elevdata:', error);
@@ -432,6 +436,19 @@ function renderStudentStatsChart(apiData, errorMsg) {
             }
         }
     });
+}
+
+// Hjelpefunksjon for å tvinge Chart.js til å tilpasse seg modalens bredde
+function forceResizeChart(chart) {
+    if (!chart) return;
+    // Tving canvas til å matche modalens bredde
+    const canvas = chart.canvas;
+    const parent = canvas.parentElement;
+    if (parent && parent.offsetWidth > 0) {
+        canvas.width = parent.offsetWidth;
+        chart.resize();
+        chart.update();
+    }
 }
 
 // Hjelpefunksjon for tilbakemelding (toast)
