@@ -54,6 +54,7 @@ def manage_classes():
 def add_class():
     """Add a new class"""
     class_name = request.form.get('class_name', '').strip()
+    print(f"DEBUG: Attempting to add class: '{class_name}'")
     
     if not class_name:
         flash('Klassenavn er påkrevd', 'error')
@@ -62,14 +63,21 @@ def add_class():
     # Check if class already exists
     existing_class = Class.query.filter_by(name=class_name).first()
     if existing_class:
+        print(f"DEBUG: Class '{class_name}' already exists")
         flash('Klassen eksisterer allerede', 'error')
         return redirect(url_for('manage_classes'))
     
-    new_class = Class(name=class_name)
-    db.session.add(new_class)
-    db.session.commit()
+    try:
+        new_class = Class(name=class_name)
+        db.session.add(new_class)
+        db.session.commit()
+        print(f"DEBUG: Successfully added class '{class_name}'")
+        flash(f'Klasse "{class_name}" ble lagt til', 'success')
+    except Exception as e:
+        print(f"DEBUG: Error adding class: {e}")
+        db.session.rollback()
+        flash('Feil ved lagring av klasse', 'error')
     
-    flash(f'Klasse "{class_name}" ble lagt til', 'success')
     return redirect(url_for('manage_classes'))
 
 @app.route('/add_student', methods=['POST'])
@@ -77,8 +85,10 @@ def add_student():
     """Add a student to a class"""
     class_id = request.form.get('class_id')
     student_name = request.form.get('student_name', '').strip()
+    print(f"DEBUG: Attempting to add student '{student_name}' to class {class_id}")
     
     if not class_id or not student_name:
+        print(f"DEBUG: Missing data - class_id: {class_id}, student_name: '{student_name}'")
         flash('Klasse og elevnavn er påkrevd', 'error')
         return redirect(url_for('manage_classes'))
     
@@ -89,14 +99,21 @@ def add_student():
     ).first()
     
     if existing_student:
+        print(f"DEBUG: Student '{student_name}' already exists in class {class_id}")
         flash('Eleven eksisterer allerede i denne klassen', 'error')
         return redirect(url_for('manage_classes'))
     
-    new_student = Student(name=student_name, class_id=class_id)
-    db.session.add(new_student)
-    db.session.commit()
+    try:
+        new_student = Student(name=student_name, class_id=class_id)
+        db.session.add(new_student)
+        db.session.commit()
+        print(f"DEBUG: Successfully added student '{student_name}' to class {class_id}")
+        flash(f'Elev "{student_name}" ble lagt til', 'success')
+    except Exception as e:
+        print(f"DEBUG: Error adding student: {e}")
+        db.session.rollback()
+        flash('Feil ved lagring av elev', 'error')
     
-    flash(f'Elev "{student_name}" ble lagt til', 'success')
     return redirect(url_for('manage_classes'))
 
 @app.route('/delete_class/<int:class_id>', methods=['POST'])
