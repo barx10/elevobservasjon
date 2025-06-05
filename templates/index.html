@@ -69,12 +69,6 @@
                     </div>
                 {% endfor %}
             </div>
-        {% else %}
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                Ingen klasser registrert ennå. 
-                <a href="{{ url_for('manage_classes') }}" class="alert-link">Legg til din første klasse</a>.
-            </div>
         {% endif %}
     </div>
 </div>
