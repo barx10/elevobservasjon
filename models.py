@@ -1,5 +1,8 @@
-from app import db
 from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+
+# Database instance will be injected
+db = SQLAlchemy()
 
 class Class(db.Model):
     """Model for school classes"""

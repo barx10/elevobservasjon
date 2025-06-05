@@ -2,18 +2,11 @@ import os
 import logging
 from datetime import datetime, date
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
-
-class Base(DeclarativeBase):
-    pass
-
-db = SQLAlchemy(model_class=Base)
 
 # Create the app
 app = Flask(__name__)
@@ -24,11 +17,9 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///student_engagement.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Initialize the app with the extension
+# Import and initialize database
+from models import db, Class, Student, Observation
 db.init_app(app)
-
-# Import models after db initialization
-from models import Class, Student, Observation
 
 # Create tables
 with app.app_context():
