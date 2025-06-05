@@ -54,19 +54,28 @@
                             <th>Elev</th>
                             <th>Klasse</th>
                             <th class="text-center">
-                                <span class="badge bg-success">Deltar muntlig</span>
+                                <span class="badge bg-primary">Stiller spørsmål</span>
                             </th>
                             <th class="text-center">
-                                <span class="badge bg-info">Følger med</span>
+                                <span class="badge bg-info">Samarbeider</span>
                             </th>
                             <th class="text-center">
-                                <span class="badge bg-secondary">Er stille</span>
+                                <span class="badge bg-success">Tar initiativ</span>
                             </th>
                             <th class="text-center">
-                                <span class="badge bg-warning">Urolig</span>
+                                <span class="badge bg-secondary">Ferdigstiller oppgaver</span>
                             </th>
                             <th class="text-center">
-                                <span class="badge bg-danger">Bortforklaring</span>
+                                <span class="badge bg-warning">Behøver veiledning</span>
+                            </th>
+                            <th class="text-center">
+                                <span class="badge bg-danger">Er distrahert</span>
+                            </th>
+                            <th class="text-center">
+                                <span class="badge bg-dark">Viser glede/interesse</span>
+                            </th>
+                            <th class="text-center">
+                                <span class="badge bg-light text-dark">Tilbaketrukket</span>
                             </th>
                             <th class="text-center">Totalt</th>
                         </tr>
@@ -79,36 +88,57 @@
                                     <span class="badge bg-dark">{{ stats.student.class_ref.name }}</span>
                                 </td>
                                 <td class="text-center">
-                                    {% if stats.deltar_muntlig > 0 %}
-                                        <span class="badge bg-success">{{ stats.deltar_muntlig }}</span>
+                                    {% if stats.stiller_sporsmal > 0 %}
+                                        <span class="badge bg-primary">{{ stats.stiller_sporsmal }}</span>
                                     {% else %}
                                         <span class="text-muted">0</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-center">
-                                    {% if stats.folger_med > 0 %}
-                                        <span class="badge bg-info">{{ stats.folger_med }}</span>
+                                    {% if stats.samarbeider_med_andre > 0 %}
+                                        <span class="badge bg-info">{{ stats.samarbeider_med_andre }}</span>
                                     {% else %}
                                         <span class="text-muted">0</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-center">
-                                    {% if stats.er_stille > 0 %}
-                                        <span class="badge bg-secondary">{{ stats.er_stille }}</span>
+                                    {% if stats.tar_initiativ > 0 %}
+                                        <span class="badge bg-success">{{ stats.tar_initiativ }}</span>
                                     {% else %}
                                         <span class="text-muted">0</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-center">
-                                    {% if stats.urolig > 0 %}
-                                        <span class="badge bg-warning">{{ stats.urolig }}</span>
+                                    {% if stats.ferdigstiller_oppgaver > 0 %}
+                                        <span class="badge bg-secondary">{{ stats.ferdigstiller_oppgaver }}</span>
                                     {% else %}
                                         <span class="text-muted">0</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-center">
-                                    {% if stats.bortforklaring > 0 %}
-                                        <span class="badge bg-danger">{{ stats.bortforklaring }}</span>
+                                    {% if stats.behover_veiledning > 0 %}
+                                        <span class="badge bg-warning">{{ stats.behover_veiledning }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if stats.er_distrahert > 0 %}
+                                        <span class="badge bg-danger">{{ stats.er_distrahert }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if stats.viser_glede_interesse > 0 %}
+                                        <span class="badge bg-dark">{{ stats.viser_glede_interesse }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if stats.tilbaketrukket > 0 %}
+                                        <span class="badge bg-light text-dark">{{ stats.tilbaketrukket }}</span>
                                     {% else %}
                                         <span class="text-muted">0</span>
                                     {% endif %}
@@ -132,32 +162,64 @@
         <div class="col-md-6 col-lg-3 mb-3">
             <div class="card">
                 <div class="card-body text-center">
-                    <h3 class="text-success">{{ student_stats | sum(attribute='deltar_muntlig') }}</h3>
-                    <p class="card-text">Muntlig deltakelse</p>
+                    <h3 class="text-primary">{{ student_stats | sum(attribute='stiller_sporsmal') }}</h3>
+                    <p class="card-text">Stiller spørsmål</p>
                 </div>
             </div>
         </div>
         <div class="col-md-6 col-lg-3 mb-3">
             <div class="card">
                 <div class="card-body text-center">
-                    <h3 class="text-info">{{ student_stats | sum(attribute='folger_med') }}</h3>
-                    <p class="card-text">Følger med</p>
+                    <h3 class="text-info">{{ student_stats | sum(attribute='samarbeider_med_andre') }}</h3>
+                    <p class="card-text">Samarbeider</p>
                 </div>
             </div>
         </div>
         <div class="col-md-6 col-lg-3 mb-3">
             <div class="card">
                 <div class="card-body text-center">
-                    <h3 class="text-warning">{{ student_stats | sum(attribute='urolig') }}</h3>
-                    <p class="card-text">Urolig oppførsel</p>
+                    <h3 class="text-success">{{ student_stats | sum(attribute='tar_initiativ') }}</h3>
+                    <p class="card-text">Tar initiativ</p>
                 </div>
             </div>
         </div>
         <div class="col-md-6 col-lg-3 mb-3">
             <div class="card">
                 <div class="card-body text-center">
-                    <h3 class="text-danger">{{ student_stats | sum(attribute='bortforklaring') }}</h3>
-                    <p class="card-text">Bortforklaringar</p>
+                    <h3 class="text-secondary">{{ student_stats | sum(attribute='ferdigstiller_oppgaver') }}</h3>
+                    <p class="card-text">Ferdigstiller oppgaver</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ student_stats | sum(attribute='behover_veiledning') }}</h3>
+                    <p class="card-text">Behøver veiledning</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-danger">{{ student_stats | sum(attribute='er_distrahert') }}</h3>
+                    <p class="card-text">Er distrahert</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-dark">{{ student_stats | sum(attribute='viser_glede_interesse') }}</h3>
+                    <p class="card-text">Viser glede/interesse</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-muted">{{ student_stats | sum(attribute='tilbaketrukket') }}</h3>
+                    <p class="card-text">Tilbaketrukket</p>
                 </div>
             </div>
         </div>
