@@ -52,10 +52,10 @@
                         <div id="collapse{{ class.id }}" class="accordion-collapse collapse {% if selected_class and selected_class.id == class.id %}show{% endif %}" aria-labelledby="heading{{ class.id }}" data-bs-parent="#classAccordion">
                             <div class="accordion-body">
                                 <!-- Add student form -->
-                                <form method="POST" action="{{ url_for('add_student') }}" class="mb-3">
+                                <form method="POST" action="{{ url_for('add_student') }}" class="mb-3 add-student-form">
                                     <input type="hidden" name="class_id" value="{{ class.id }}">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" name="student_name" placeholder="Elevnavn" required>
+                                        <input type="text" class="form-control student-name-input" name="student_name" placeholder="Elevnavn" required autocomplete="off">
                                         <button type="submit" class="btn btn-outline-primary">
                                             <i class="fas fa-user-plus me-1"></i>
                                             Legg til elev
@@ -101,4 +101,24 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Etter submit: sett fokus tilbake til input og tøm feltet
+    document.querySelectorAll('.add-student-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            // Vent til etter reload hvis ikke AJAX
+            setTimeout(() => {
+                const input = form.querySelector('.student-name-input');
+                if (input) {
+                    input.value = '';
+                    input.focus();
+                }
+            }, 100);
+        });
+    });
+});
+</script>
 {% endblock %}
