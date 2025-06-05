@@ -22,10 +22,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Configure the database - use local SQLite for privacy
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///student_engagement.db"
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initialize the app with the extension
 db.init_app(app)
