@@ -45,6 +45,9 @@ def index():
 def manage_classes():
     """Manage classes and students"""
     classes = Class.query.all()
+    print(f"DEBUG: Found {len(classes)} classes in database")
+    for cls in classes:
+        print(f"DEBUG: Class: {cls.name} (ID: {cls.id})")
     return render_template('manage_classes.html', classes=classes)
 
 @app.route('/add_class', methods=['POST'])
