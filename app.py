@@ -48,7 +48,11 @@ def manage_classes():
     print(f"DEBUG: Found {len(classes)} classes in database")
     for cls in classes:
         print(f"DEBUG: Class: {cls.name} (ID: {cls.id})")
-    return render_template('manage_classes.html', classes=classes)
+    selected_class_id = request.args.get('class_id', type=int)
+    selected_class = None
+    if selected_class_id:
+        selected_class = Class.query.get(selected_class_id)
+    return render_template('manage_classes.html', classes=classes, selected_class=selected_class)
 
 @app.route('/add_class', methods=['POST'])
 def add_class():
@@ -90,7 +94,7 @@ def add_student():
     if not class_id or not student_name:
         print(f"DEBUG: Missing data - class_id: {class_id}, student_name: '{student_name}'")
         flash('Klasse og elevnavn er påkrevd', 'error')
-        return redirect(url_for('manage_classes'))
+        return redirect(url_for('manage_classes', class_id=class_id))
     
     # Check if student already exists in this class
     existing_student = Student.query.filter_by(
@@ -101,7 +105,7 @@ def add_student():
     if existing_student:
         print(f"DEBUG: Student '{student_name}' already exists in class {class_id}")
         flash('Eleven eksisterer allerede i denne klassen', 'error')
-        return redirect(url_for('manage_classes'))
+        return redirect(url_for('manage_classes', class_id=class_id))
     
     try:
         new_student = Student(name=student_name, class_id=class_id)
@@ -114,7 +118,8 @@ def add_student():
         db.session.rollback()
         flash('Feil ved lagring av elev', 'error')
     
-    return redirect(url_for('manage_classes'))
+    # Etter å ha lagt til elev, behold valgt klasse åpen
+    return redirect(url_for('manage_classes', class_id=class_id))
 
 @app.route('/delete_class/<int:class_id>', methods=['POST'])
 def delete_class(class_id):
