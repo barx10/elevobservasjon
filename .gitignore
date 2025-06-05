@@ -27,3 +27,8 @@ instance/
 # Replit
 .replit
 *.nix
+
+# Database
+instance/
+*.db
+uv.lock

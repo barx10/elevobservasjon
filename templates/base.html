@@ -76,10 +76,9 @@
     <!-- Footer -->
     <footer class="mt-5 py-4 text-center text-muted">
         <div class="container">
-            <small>
-                <i class="fas fa-database me-1"></i>
-                Alle data lagres lokalt for å ivareta personvernet
-            </small>
+            <a href="https://laererliv.no" target="_blank" rel="noopener" style="display:inline-block;">
+                <img src="{{ url_for('static', filename='Helt ny logo.png') }}" alt="laererliv.no" style="height:32px;vertical-align:middle;border-radius:8px;"> 
+            </a>
         </div>
     </footer>
 
@@ -88,6 +87,9 @@
     
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='app.js') }}"></script>
+    
+    <!-- Chart.js for elevstatistikk -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     {% block scripts %}{% endblock %}
 </body>

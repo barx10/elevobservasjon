@@ -41,62 +41,58 @@
     <div class="col-12">
         <h3>Eksisterende klasser</h3>
         {% if classes %}
-            {% for class in classes %}
-                <div class="card mb-3">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">{{ class.name }}</h5>
-                        <div>
-                            <a href="{{ url_for('observe_class', class_id=class.id) }}" 
-                               class="btn btn-sm btn-success me-2">
-                                <i class="fas fa-eye me-1"></i>
-                                Observer
-                            </a>
-                            <form method="POST" action="{{ url_for('delete_class', class_id=class.id) }}" 
-                                  class="d-inline" onsubmit="return confirm('Er du sikker på at du vil slette denne klassen og alle tilhørende data?')">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash me-1"></i>
-                                    Slett
-                                </button>
-                            </form>
+            <div class="accordion" id="classAccordion">
+                {% for class in classes %}
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header" id="heading{{ class.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ class.id }}" aria-expanded="false" aria-controls="collapse{{ class.id }}">
+                                {{ class.name }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ class.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ class.id }}" data-bs-parent="#classAccordion">
+                            <div class="accordion-body">
+                                <!-- Add student form -->
+                                <form method="POST" action="{{ url_for('add_student') }}" class="mb-3">
+                                    <input type="hidden" name="class_id" value="{{ class.id }}">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="student_name" placeholder="Elevnavn" required>
+                                        <button type="submit" class="btn btn-outline-primary">
+                                            <i class="fas fa-user-plus me-1"></i>
+                                            Legg til elev
+                                        </button>
+                                    </div>
+                                </form>
+                                <!-- Students list -->
+                                {% if class.students %}
+                                    <div class="row">
+                                        {% for student in class.students %}
+                                            <div class="col-md-6 col-lg-4 mb-2">
+                                                <div class="d-flex justify-content-between align-items-center p-2 bg-dark rounded">
+                                                    <span>{{ student.name }}</span>
+                                                    <form method="POST" action="{{ url_for('delete_student', student_id=student.id) }}" class="d-inline" onsubmit="return confirm('Er du sikker på at du vil slette denne eleven og alle observasjoner?')">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">Ingen elever registrert i denne klassen.</p>
+                                {% endif %}
+                                <!-- Slett klasse-knapp -->
+                                <form method="POST" action="{{ url_for('delete_class', class_id=class.id) }}" class="mt-3" onsubmit="return confirm('Er du sikker på at du vil slette denne klassen og alle tilhørende data?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash me-1"></i>
+                                        Slett klasse
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <!-- Add student form -->
-                        <form method="POST" action="{{ url_for('add_student') }}" class="mb-3" onsubmit="console.log('Submitting add_student form for class {{ class.id }}');">
-                            <input type="hidden" name="class_id" value="{{ class.id }}">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="student_name" 
-                                       placeholder="Elevnavn" required>
-                                <button type="submit" class="btn btn-outline-primary">
-                                    <i class="fas fa-user-plus me-1"></i>
-                                    Legg til elev
-                                </button>
-                            </div>
-                        </form>
-                        
-                        <!-- Students list -->
-                        {% if class.students %}
-                            <div class="row">
-                                {% for student in class.students %}
-                                    <div class="col-md-6 col-lg-4 mb-2">
-                                        <div class="d-flex justify-content-between align-items-center p-2 bg-dark rounded">
-                                            <span>{{ student.name }}</span>
-                                            <form method="POST" action="{{ url_for('delete_student', student_id=student.id) }}" 
-                                                  class="d-inline" onsubmit="return confirm('Er du sikker på at du vil slette denne eleven og alle observasjoner?')">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <p class="text-muted">Ingen elever registrert i denne klassen.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         {% else %}
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>

@@ -175,7 +175,17 @@ def record_observation():
         return jsonify({'success': False, 'message': 'Manglende data'})
     
     # Validate observation type
-    valid_types = ['deltar_muntlig', 'folger_med', 'er_stille', 'urolig', 'bortforklaring', 'egne_notater']
+    valid_types = [
+        'stiller_sporsmal',
+        'samarbeider_med_andre',
+        'tar_initiativ',
+        'ferdigstiller_oppgaver',
+        'behover_veiledning',
+        'er_distrahert',
+        'viser_glede_interesse',
+        'tilbaketrukket',
+        'egne_notater'
+    ]
     if observation_type not in valid_types:
         return jsonify({'success': False, 'message': 'Ugyldig observasjonstype'})
     
@@ -248,6 +258,39 @@ def statistics():
 def privacy_info():
     """GDPR and privacy information"""
     return render_template('privacy_info.html')
+
+@app.route('/student_observation_history/<int:student_id>')
+def student_observation_history(student_id):
+    """Return time series of all observation types for a student (grouped per day)"""
+    from collections import defaultdict
+    student = Student.query.get_or_404(student_id)
+    # List of all valid observation types (excluding 'egne_notater')
+    observation_types = [
+        'stiller_sporsmal',
+        'samarbeider_med_andre',
+        'tar_initiativ',
+        'ferdigstiller_oppgaver',
+        'behover_veiledning',
+        'er_distrahert',
+        'viser_glede_interesse',
+        'tilbaketrukket',
+    ]
+    # Query all observations for this student
+    observations = Observation.query.filter_by(student_id=student_id).all()
+    # Group by date and type
+    data = defaultdict(lambda: {k: 0 for k in observation_types})
+    for obs in observations:
+        obs_date = obs.timestamp.date().isoformat()
+        if obs.observation_type in observation_types:
+            data[obs_date][obs.observation_type] += 1
+    # Sort dates
+    sorted_dates = sorted(data.keys())
+    # Build response
+    result = {
+        'dates': sorted_dates,
+        'series': {k: [data[d][k] for d in sorted_dates] for k in observation_types}
+    }
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5050, debug=True)

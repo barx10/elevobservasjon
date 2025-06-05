@@ -59,65 +59,42 @@
 <div class="row">
     {% for student in students %}
         <div class="col-12 col-md-6 col-lg-4 mb-4">
-            <div class="card student-card">
+            <div class="card student-card" data-student-id="{{ student.id }}">
                 <div class="card-header text-center">
                     <h5 class="mb-0">{{ student.name }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <button class="btn btn-primary observation-btn" 
-                                data-student-id="{{ student.id }}" 
-                                data-observation="stiller_sporsmal">
-                            <i class="fas fa-question-circle me-1"></i>
-                            Stiller spørsmål
-                        </button>
-                        <button class="btn btn-info observation-btn" 
-                                data-student-id="{{ student.id }}" 
-                                data-observation="samarbeider_med_andre">
-                            <i class="fas fa-users me-1"></i>
-                            Samarbeider
-                        </button>
-                        <button class="btn btn-success observation-btn" 
-                                data-student-id="{{ student.id }}" 
-                                data-observation="tar_initiativ">
-                            <i class="fas fa-bolt me-1"></i>
-                            Tar initiativ
-                        </button>
-                        <button class="btn btn-secondary observation-btn" 
-                                data-student-id="{{ student.id }}" 
-                                data-observation="ferdigstiller_oppgaver">
-                            <i class="fas fa-check-circle me-1"></i>
-                            Ferdigstiller oppgaver
-                        </button>
-                        <button class="btn btn-warning observation-btn" 
-                                data-student-id="{{ student.id }}" 
-                                data-observation="behover_veiledning">
-                            <i class="fas fa-hands-helping me-1"></i>
-                            Behøver veiledning
-                        </button>
-                        <button class="btn btn-danger observation-btn" 
-                                data-student-id="{{ student.id }}" 
-                                data-observation="er_distrahert">
-                            <i class="fas fa-random me-1"></i>
-                            Er distrahert
-                        </button>
-                        <button class="btn btn-dark observation-btn" 
-                                data-student-id="{{ student.id }}" 
-                                data-observation="viser_glede_interesse">
-                            <i class="fas fa-smile-beam me-1"></i>
-                            Viser glede/interesse
-                        </button>
-                        <button class="btn btn-light text-dark observation-btn" 
-                                data-student-id="{{ student.id }}" 
-                                data-observation="tilbaketrukket">
-                            <i class="fas fa-user-secret me-1"></i>
-                            Tilbaketrukket
-                        </button>
+                        <!-- Statistikk-knapp for elev (valgfritt, kan fjernes hvis alt skal i modal) -->
+                        <!-- <button class="btn btn-outline-info btn-sm mb-2 show-student-stats" data-student-id="{{ student.id }}">
+                            <i class="fas fa-chart-line me-1"></i> Vis utvikling
+                        </button> -->
                     </div>
                 </div>
             </div>
         </div>
     {% endfor %}
+</div>
+
+<!-- Modal for observasjon av elev -->
+<div class="modal fade" id="observeStudentModal" tabindex="-1" aria-labelledby="observeStudentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="observeStudentModalLabel">Observasjon: <span id="observeStudentName"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="observeStudentButtons" class="d-grid gap-2"></div>
+        <button class="btn btn-outline-info btn-sm mt-3 w-100" id="observeShowStatsBtn">
+          <i class="fas fa-chart-line me-1"></i> Vis utvikling
+        </button>
+        <button class="btn btn-outline-secondary btn-sm mt-2 w-100" id="observeShowNotesBtn">
+          <i class="fas fa-pen me-1"></i> Egne notater
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Notes Modal -->
@@ -142,6 +119,8 @@
         </div>
     </div>
 </div>
+
+{% include '_student_stats_modal.html' %}
 
 <!-- Feedback area -->
 <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1050;">
@@ -250,6 +229,218 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    document.querySelectorAll('.show-student-stats').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const studentId = this.dataset.studentId;
+            const studentName = this.closest('.student-card').querySelector('h5').textContent;
+            showStudentStats(studentId, studentName);
+        });
+    });
+
+    // Mobilvennlig: Klikk på elevnavn åpner observasjonsmodal
+    document.querySelectorAll('.student-card .card-header').forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            const card = this.closest('.student-card');
+            // Finn studentId og navn på en robust måte
+            let studentId = null;
+            let studentName = card.querySelector('h5').textContent;
+            // Prøv å hente studentId fra data-attributt på card eller card-header
+            if (card.dataset.studentId) {
+                studentId = card.dataset.studentId;
+            } else {
+                // Fallback: Finn fra en av knappene hvis de finnes (for bakoverkompatibilitet)
+                const statsBtn = card.querySelector('[data-student-id]');
+                if (statsBtn) studentId = statsBtn.dataset.studentId;
+            }
+            if (!studentId) {
+                alert('Fant ikke elev-ID.');
+                return;
+            }
+            showObserveStudentModal(studentId, studentName);
+        });
+    });
+
+    // Håndter vis utvikling fra modal
+    document.getElementById('observeShowStatsBtn').addEventListener('click', function() {
+        const studentId = this.dataset.studentId;
+        const studentName = this.dataset.studentName;
+        const modal = bootstrap.Modal.getInstance(document.getElementById('observeStudentModal'));
+        modal.hide();
+        showStudentStats(studentId, studentName);
+    });
+    // Håndter egne notater fra modal
+    document.getElementById('observeShowNotesBtn').addEventListener('click', function() {
+        const studentId = this.dataset.studentId;
+        const studentName = this.dataset.studentName;
+        const modal = bootstrap.Modal.getInstance(document.getElementById('observeStudentModal'));
+        modal.hide();
+        showNotesModal(studentId, studentName);
+    });
+
+    // Last ned graf-knapp
+    const downloadBtn = document.getElementById('downloadStudentChartBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', function() {
+            if (window.studentStatsChart) {
+                // Eksporter graf med hvit bakgrunn (manuell metode)
+                const chart = window.studentStatsChart;
+                const canvas = chart.canvas;
+                // Lag et nytt canvas med hvit bakgrunn
+                const exportCanvas = document.createElement('canvas');
+                exportCanvas.width = canvas.width;
+                exportCanvas.height = canvas.height;
+                const ctx = exportCanvas.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+                ctx.drawImage(canvas, 0, 0);
+                const url = exportCanvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `elevutvikling_${document.getElementById('studentStatsName').textContent.trim().replace(/\s+/g, '_')}.png`;
+                link.click();
+            }
+        });
+    }
 });
+
+function showObserveStudentModal(studentId, studentName) {
+    document.getElementById('observeStudentName').textContent = studentName;
+    // Lag knapper for alle observasjonskategorier
+    const categories = [
+        {type: 'stiller_sporsmal', label: 'Stiller spørsmål', icon: 'fa-question-circle', btn: 'btn-primary'},
+        {type: 'samarbeider_med_andre', label: 'Samarbeider', icon: 'fa-users', btn: 'btn-info'},
+        {type: 'tar_initiativ', label: 'Tar initiativ', icon: 'fa-bolt', btn: 'btn-success'},
+        {type: 'ferdigstiller_oppgaver', label: 'Ferdigstiller oppgaver', icon: 'fa-check-circle', btn: 'btn-secondary'},
+        {type: 'behover_veiledning', label: 'Behøver veiledning', icon: 'fa-hands-helping', btn: 'btn-warning'},
+        {type: 'er_distrahert', label: 'Er distrahert', icon: 'fa-random', btn: 'btn-danger'},
+        {type: 'viser_glede_interesse', label: 'Viser glede/interesse', icon: 'fa-smile-beam', btn: 'btn-dark'},
+        {type: 'tilbaketrukket', label: 'Tilbaketrukket', icon: 'fa-user-secret', btn: 'btn-light text-dark'}
+    ];
+    const btnsDiv = document.getElementById('observeStudentButtons');
+    btnsDiv.innerHTML = '';
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `btn ${cat.btn} observation-btn`;
+        btn.innerHTML = `<i class='fas ${cat.icon} me-1'></i> ${cat.label}`;
+        btn.onclick = function() {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Registrerer...';
+            fetch('/record_observation', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `student_id=${studentId}&observation_type=${cat.type}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                showFeedback(data.message, data.success ? 'success' : 'danger');
+            })
+            .catch(() => showFeedback('Det oppstod en feil', 'danger'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = `<i class='fas ${cat.icon} me-1'></i> ${cat.label}`;
+            });
+        };
+        btnsDiv.appendChild(btn);
+    });
+    // Oppdater data-attributter for vis utvikling og notater
+    document.getElementById('observeShowStatsBtn').dataset.studentId = studentId;
+    document.getElementById('observeShowStatsBtn').dataset.studentName = studentName;
+    document.getElementById('observeShowNotesBtn').dataset.studentId = studentId;
+    document.getElementById('observeShowNotesBtn').dataset.studentName = studentName;
+    // Vis modal
+    const modal = new bootstrap.Modal(document.getElementById('observeStudentModal'));
+    modal.show();
+}
+
+function showStudentStats(studentId, studentName) {
+    document.getElementById('studentStatsName').textContent = studentName;
+    const modal = new bootstrap.Modal(document.getElementById('studentStatsModal'));
+    modal.show();
+    fetch(`/student_observation_history/${studentId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('API-data for elevutvikling:', data); // Logg data til konsoll
+            renderStudentStatsChart(data);
+        })
+        .catch(error => {
+            console.error('Feil ved henting av elevdata:', error);
+            renderStudentStatsChart(null, 'Kunne ikke hente data');
+        });
+}
+
+function renderStudentStatsChart(apiData, errorMsg) {
+    if (window.studentStatsChart && typeof window.studentStatsChart.destroy === 'function') {
+        window.studentStatsChart.destroy();
+    }
+    const ctx = document.getElementById('studentStatsChart').getContext('2d');
+    if (!apiData || !apiData.dates || apiData.dates.length === 0 || Object.values(apiData.series || {}).every(arr => arr.every(v => v === 0))) {
+        // Ingen data eller alle verdier er 0
+        window.studentStatsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: []
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: errorMsg || 'Ingen observasjoner registrert for denne eleven.' }
+                }
+            }
+        });
+        return;
+    }
+    // Farger og labels for hver observasjonstype
+    const typeMeta = {
+        'stiller_sporsmal': {label: 'Stiller spørsmål', color: '#0d6efd'},
+        'samarbeider_med_andre': {label: 'Samarbeider', color: '#0dcaf0'},
+        'tar_initiativ': {label: 'Tar initiativ', color: '#198754'},
+        'ferdigstiller_oppgaver': {label: 'Ferdigstiller oppgaver', color: '#6c757d'},
+        'behover_veiledning': {label: 'Behøver veiledning', color: '#ffc107'},
+        'er_distrahert': {label: 'Er distrahert', color: '#dc3545'},
+        'viser_glede_interesse': {label: 'Viser glede/interesse', color: '#212529'},
+        'tilbaketrukket': {label: 'Tilbaketrukket', color: '#adb5bd'}
+    };
+    const datasets = Object.keys(apiData.series).map(type => ({
+        label: typeMeta[type]?.label || type,
+        data: apiData.series[type],
+        borderColor: typeMeta[type]?.color || '#888',
+        backgroundColor: (typeMeta[type]?.color || '#888') + '33',
+        tension: 0.3,
+        spanGaps: true,
+        pointRadius: 3,
+        pointHoverRadius: 5
+    }));
+    window.studentStatsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: apiData.dates,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                title: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Antall observasjoner' } },
+                x: { title: { display: true, text: 'Dato' } }
+            }
+        }
+    });
+}
+
+// Hjelpefunksjon for tilbakemelding (toast)
+function showFeedback(message, type = 'success') {
+    const feedbackToast = new bootstrap.Toast(document.getElementById('feedback-toast'));
+    const feedbackMessage = document.getElementById('feedback-message');
+    feedbackMessage.textContent = message;
+    document.getElementById('feedback-toast').className = `toast align-items-center text-white bg-${type} border-0`;
+    feedbackToast.show();
+}
 </script>
 {% endblock %}

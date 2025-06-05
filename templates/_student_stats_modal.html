@@ -1,0 +1,17 @@
+<!-- Modal for elevens utvikling -->
+<div class="modal fade" id="studentStatsModal" tabindex="-1" aria-labelledby="studentStatsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="studentStatsModalLabel">Utvikling for <span id="studentStatsName"></span></h5>
+        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="downloadStudentChartBtn">
+          <i class="fas fa-download"></i> Last ned graf
+        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <canvas id="studentStatsChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
