@@ -201,6 +201,9 @@ def record_observation():
 def statistics():
     """Show engagement statistics"""
     classes = Class.query.all()
+    print(f"DEBUG: Statistics - Found {len(classes)} classes")
+    for cls in classes:
+        print(f"DEBUG: Statistics - Class: {cls.name} (ID: {cls.id})")
     selected_class_id = request.args.get('class_id', type=int)
     
     if selected_class_id:
