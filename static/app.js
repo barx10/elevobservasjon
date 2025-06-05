@@ -61,9 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Form validation enhancements
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
+    // Form validation enhancements - only for observation forms, not management forms
+    const observationForms = document.querySelectorAll('form[action*="record_observation"]');
+    observationForms.forEach(form => {
         form.addEventListener('submit', function(e) {
             console.log('Form submit event triggered for:', form.action);
             const requiredFields = form.querySelectorAll('[required]');
@@ -110,6 +110,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    // Allow all other forms to submit normally without interference
+    console.log('JavaScript validation limited to observation forms only');
 
     // Statistics page enhancements
     if (window.location.pathname.includes('/statistics')) {
