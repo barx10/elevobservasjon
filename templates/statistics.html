@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Statistikk - Elevengasjement Observasjon{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-chart-bar me-2"></i>
+            Engasjementsstatistikk
+        </h1>
+    </div>
+</div>
+
+<!-- Class filter -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Filtrer etter klasse</h6>
+                <form method="GET">
+                    <div class="input-group">
+                        <select name="class_id" class="form-select">
+                            <option value="">Alle klasser</option>
+                            {% for class in classes %}
+                                <option value="{{ class.id }}" 
+                                        {% if selected_class and selected_class.id == class.id %}selected{% endif %}>
+                                    {{ class.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics display -->
+{% if student_stats %}
+    <div class="row">
+        <div class="col-12">
+            {% if selected_class %}
+                <h3>Statistikk for {{ selected_class.name }}</h3>
+            {% else %}
+                <h3>Statistikk for alle klasser</h3>
+            {% endif %}
+            
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Elev</th>
+                            <th>Klasse</th>
+                            <th class="text-center">
+                                <span class="badge bg-success">Deltar muntlig</span>
+                            </th>
+                            <th class="text-center">
+                                <span class="badge bg-info">Følger med</span>
+                            </th>
+                            <th class="text-center">
+                                <span class="badge bg-secondary">Er stille</span>
+                            </th>
+                            <th class="text-center">
+                                <span class="badge bg-warning">Urolig</span>
+                            </th>
+                            <th class="text-center">
+                                <span class="badge bg-danger">Bortforklaring</span>
+                            </th>
+                            <th class="text-center">Totalt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stats in student_stats %}
+                            <tr>
+                                <td><strong>{{ stats.student.name }}</strong></td>
+                                <td>
+                                    <span class="badge bg-dark">{{ stats.student.class_ref.name }}</span>
+                                </td>
+                                <td class="text-center">
+                                    {% if stats.deltar_muntlig > 0 %}
+                                        <span class="badge bg-success">{{ stats.deltar_muntlig }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if stats.folger_med > 0 %}
+                                        <span class="badge bg-info">{{ stats.folger_med }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if stats.er_stille > 0 %}
+                                        <span class="badge bg-secondary">{{ stats.er_stille }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if stats.urolig > 0 %}
+                                        <span class="badge bg-warning">{{ stats.urolig }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if stats.bortforklaring > 0 %}
+                                        <span class="badge bg-danger">{{ stats.bortforklaring }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <strong>{{ stats.total }}</strong>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h4>Sammendrag</h4>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ student_stats | sum(attribute='deltar_muntlig') }}</h3>
+                    <p class="card-text">Muntlig deltakelse</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-info">{{ student_stats | sum(attribute='folger_med') }}</h3>
+                    <p class="card-text">Følger med</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ student_stats | sum(attribute='urolig') }}</h3>
+                    <p class="card-text">Urolig oppførsel</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-danger">{{ student_stats | sum(attribute='bortforklaring') }}</h3>
+                    <p class="card-text">Bortforklaringar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Ingen observasjonsdata tilgjengelig ennå. Start med å registrere observasjoner for elevene dine.
+    </div>
+{% endif %}
+{% endblock %}

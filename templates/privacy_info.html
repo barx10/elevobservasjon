@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Personvern og GDPR - Elevengasjement Observasjon{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-shield-alt me-2"></i>
+            Personvern og GDPR-overholdelse
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4><i class="fas fa-database me-2"></i>Lokal datalagring</h4>
+            </div>
+            <div class="card-body">
+                <p>Denne applikasjonen er designet med personvern som første prioritet:</p>
+                <ul>
+                    <li><strong>Kun lokal lagring:</strong> All data lagres i en lokal SQLite-database på din enhet</li>
+                    <li><strong>Ingen sky-tjenester:</strong> Ingen data sendes til eksterne servere eller sky-tjenester</li>
+                    <li><strong>Offline tilgjengelighet:</strong> Appen fungerer fullstendig offline</li>
+                    <li><strong>Full kontroll:</strong> Du har full kontroll over dataene dine</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4><i class="fas fa-gavel me-2"></i>GDPR-overholdelse</h4>
+            </div>
+            <div class="card-body">
+                <h6>Anbefalinger for å overholde GDPR:</h6>
+                <ol>
+                    <li><strong>Informert samtykke:</strong>
+                        <ul>
+                            <li>Informer elever/foresatte om observasjonsformålet</li>
+                            <li>Innhent samtykke der det er nødvendig</li>
+                            <li>Dokument at observasjon er del av normal undervisningsoppfølging</li>
+                        </ul>
+                    </li>
+                    <li><strong>Dataformål:</strong>
+                        <ul>
+                            <li>Bruk kun observasjonsdata til pedagogiske formål</li>
+                            <li>Dokumenter at datainnsamlingen støtter elevenes læring</li>
+                        </ul>
+                    </li>
+                    <li><strong>Dataminimering:</strong>
+                        <ul>
+                            <li>Registrer kun nødvendige observasjoner</li>
+                            <li>Unngå unødvendige personlige detaljer</li>
+                            <li>Slett gamle data som ikke lenger er relevant</li>
+                        </ul>
+                    </li>
+                    <li><strong>Tilgangsrettigheter:</strong>
+                        <ul>
+                            <li>Elever/foresatte har rett til innsyn i sine data</li>
+                            <li>Tilby mulighet for sletting av data på forespørsel</li>
+                            <li>Sørg for sikker lagring av enheten din</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4><i class="fas fa-lock me-2"></i>Sikkerhetstiltak</h4>
+            </div>
+            <div class="card-body">
+                <h6>Anbefalte sikkerhetstiltak:</h6>
+                <ul>
+                    <li><strong>Enhetssikkerhet:</strong>
+                        <ul>
+                            <li>Bruk skjermlås på enheten din</li>
+                            <li>Hold operativsystemet oppdatert</li>
+                            <li>Unngå å lagre appen på delte enheter</li>
+                        </ul>
+                    </li>
+                    <li><strong>Databackup:</strong>
+                        <ul>
+                            <li>Ta regelmessige sikkerhetskopier av databasefilen</li>
+                            <li>Lagre backup sikkert og kryptert</li>
+                            <li>Test at backup fungerer</li>
+                        </ul>
+                    </li>
+                    <li><strong>Tilgangskontroll:</strong>
+                        <ul>
+                            <li>Ikke del enheten med uvedkommende</li>
+                            <li>Logg ut eller lukk appen når den ikke brukes</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4><i class="fas fa-calendar-times me-2"></i>Dataoppbevaring</h4>
+            </div>
+            <div class="card-body">
+                <h6>Retningslinjer for oppbevaring av data:</h6>
+                <ul>
+                    <li><strong>Oppbevaringstid:</strong> Vurder hvor lenge observasjonsdata er nødvendig</li>
+                    <li><strong>Årlig opprydding:</strong> Slett gamle data som ikke lenger er relevant</li>
+                    <li><strong>Skolens retningslinjer:</strong> Følg skolens retningslinjer for dokumentasjon</li>
+                    <li><strong>Automatisk sletting:</strong> Vurder å implementere automatisk sletting av gamle data</li>
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Merk:</strong> Konsulter med skolens datavernombud eller ledelse for spesifikke 
+                    retningslinjer som gjelder for din institusjon.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-question-circle me-2"></i>Spørsmål og svar</h5>
+            </div>
+            <div class="card-body">
+                <h6>Kan elever/foresatte se dataene?</h6>
+                <p>Ja, du kan eksportere eller vise data til elever/foresatte på forespørsel, siden alt lagres lokalt.</p>
+
+                <h6>Hva skjer hvis enheten mistes?</h6>
+                <p>Med skjermlås og lokal lagring er risikoen lav, men ha backup og slett appen fra mistet enhet hvis mulig.</p>
+
+                <h6>Kan data deles med andre lærere?</h6>
+                <p>Kun hvis det er pedagogisk begrunnet og i tråd med skolens retningslinjer. Vurder personvernet.</p>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-check-circle me-2"></i>Personvernfordeler</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i>100% lokal datalagring</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Ingen nettverkstilgang nødvendig</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Full kontroll over data</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Enkel sletting av data</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Transparent databruk</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

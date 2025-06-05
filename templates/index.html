@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Elevengasjement Observasjon{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Quick stats -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 class="text-primary">{{ classes|length }}</h3>
+                <p class="card-text">Registrerte klasser</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 class="text-success">{{ today_count }}</h3>
+                <p class="card-text">Observasjoner i dag</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 class="text-info">{{ recent_observations|length }}</h3>
+                <p class="card-text">Siste aktivitet</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick access to classes -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h3>
+            <i class="fas fa-eye me-2"></i>
+            Start observasjon
+        </h3>
+        {% if classes %}
+            <div class="row">
+                {% for class in classes %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ class.name }}</h5>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        {{ class.students|length }} elever
+                                    </small>
+                                </p>
+                                <a href="{{ url_for('observe_class', class_id=class.id) }}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-play me-1"></i>
+                                    Start observasjon
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Ingen klasser registrert ennå. 
+                <a href="{{ url_for('manage_classes') }}" class="alert-link">Legg til din første klasse</a>.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent activity -->
+{% if recent_observations %}
+<div class="row">
+    <div class="col-12">
+        <h3>
+            <i class="fas fa-clock me-2"></i>
+            Siste aktivitet
+        </h3>
+        <div class="card">
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for obs in recent_observations %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ obs.student.name }}</strong>
+                                <span class="badge bg-secondary ms-2">{{ obs.student.class_ref.name }}</span>
+                                <br>
+                                <small class="text-muted">{{ obs.observation_display }}</small>
+                            </div>
+                            <small class="text-muted">
+                                {{ obs.timestamp.strftime('%H:%M') }}
+                            </small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h3>Hurtighandlinger</h3>
+        <div class="d-grid gap-2 d-md-block">
+            <a href="{{ url_for('manage_classes') }}" class="btn btn-outline-primary">
+                <i class="fas fa-users-cog me-1"></i>
+                Administrer klasser
+            </a>
+            <a href="{{ url_for('statistics') }}" class="btn btn-outline-info">
+                <i class="fas fa-chart-bar me-1"></i>
+                Vis statistikk
+            </a>
+            <a href="{{ url_for('privacy_info') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-shield-alt me-1"></i>
+                Personverninfo
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
