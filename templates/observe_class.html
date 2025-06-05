@@ -295,14 +295,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Hvit bakgrunn
                 ctx.fillStyle = '#fff';
                 ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-                // Tegn grafen på nytt på eksport-canvas
                 // Skaler original canvas inn i eksport-canvas
                 ctx.drawImage(origCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
                 const url = exportCanvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = `elevutvikling_${document.getElementById('studentStatsName').textContent.trim().replace(/\s+/g, '_')}.png`;
+                link.style.display = 'none'; // Skjul lenken
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link); // Fjern lenken etterpå
             }
         });
     }
