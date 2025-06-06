@@ -161,6 +161,17 @@
                 <p>Spørsmål om appen?<br>Kontakt oss på <a href="mailto:kenneth@laererliv.no">kenneth@laererliv.no</a> for tekniske spørsmål om appens funksjonalitet.</p>
             </div>
         </div>
+        <div class="card mt-3">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-download me-2"></i>Eksport av data</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('export_data') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-file-csv me-1"></i> Last ned alle observasjoner (CSV)
+                </a>
+                <p class="mt-2 mb-0 text-muted" style="font-size:0.95em;">Du kan laste ned alle observasjoner for enkel deling eller dokumentasjon.</p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -1,9 +1,10 @@
 import os
 import logging
 from datetime import datetime, date
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
 from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
+import csv
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -296,6 +297,23 @@ def student_observation_history(student_id):
         'series': {k: [data[d][k] for d in sorted_dates] for k in observation_types}
     }
     return jsonify(result)
+
+@app.route('/export_data')
+def export_data():
+    """Export all observations as CSV"""
+    from models import Observation, Student, Class
+    observations = Observation.query.all()
+    def generate():
+        yield 'Elev,Klasse,Observasjonstype,Notater,Tidspunkt\n'
+        for obs in observations:
+            elev = obs.student.name
+            klasse = obs.student.class_ref.name
+            obs_type = obs.observation_type
+            notater = (obs.notes or '').replace('\n', ' ')
+            tidspunkt = obs.timestamp.strftime('%Y-%m-%d %H:%M')
+            yield f'"{elev}","{klasse}","{obs_type}","{notater}","{tidspunkt}"\n'
+    return Response(generate(), mimetype='text/csv',
+                    headers={'Content-Disposition': 'attachment; filename=observasjoner.csv'})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5050, debug=True)
