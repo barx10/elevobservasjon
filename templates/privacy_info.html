@@ -19,28 +19,35 @@
                 <h4><i class="fas fa-database me-2"></i>Lokal datalagring</h4>
             </div>
             <div class="card-body">
-                <p>Denne applikasjonen er designet med personvern som første prioritet:</p>
+                <p>Viktig: Denne appen fungerer som en digital notatbok - all data lagres kun på din enhet. Du og din skole er ansvarlig for personvernhåndtering i henhold til normal pedagogisk praksis. For spesifikke retningslinjer, kontakt din skole.</p>
                 <ul>
-                    <li><strong>Kun lokal lagring:</strong> All data lagres i en lokal SQLite-database på din enhet</li>
-                    <li><strong>Ingen sky-tjenester:</strong> Ingen data sendes til eksterne servere eller sky-tjenester</li>
-                    <li><strong>Offline tilgjengelighet:</strong> Appen fungerer fullstendig offline</li>
-                    <li><strong>Full kontroll:</strong> Du har full kontroll over dataene dine</li>
+                    <li><strong>100% lokal lagring:</strong> All data lagres kun på din enhet - ingen nettverkstilgang nødvendig</li>
+                    <li><strong>Ingen servere:</strong> Appen fungerer helt uten tilkobling til eksterne servere</li>
+                    <li><strong>Offline-first:</strong> Designet for å fungere fullstendig uten internett</li>
+                    <li><strong>Full kontroll:</strong> Du har komplett kontroll over alle data</li>
                 </ul>
             </div>
         </div>
-
         <div class="card mb-4">
             <div class="card-header">
                 <h4><i class="fas fa-gavel me-2"></i>GDPR-overholdelse</h4>
             </div>
             <div class="card-body">
-                <h6>Anbefalinger for å overholde GDPR:</h6>
-                <ol>
-                    <li><strong>Informert samtykke:</strong>
+                <h6>GDPR-fordeler med lokal lagring:</h6>
+                <ul>
+                    <li>Ingen dataoverføring = minimal personvernrisiko</li>
+                    <li>Du har full kontroll over alle data</li>
+                    <li>Enkel sletting - slett appen = alle data borte</li>
+                    <li>Ingen tredjepart involvert i databehandling</li>
+                </ul>
+                <h6 class="mt-3">Anbefalinger for å overholde GDPR:</h6>
+                <ul>
+                    <li><strong>Rettslig grunnlag:</strong>
                         <ul>
-                            <li>Informer elever/foresatte om observasjonsformålet</li>
-                            <li>Innhent samtykke der det er nødvendig</li>
-                            <li>Dokument at observasjon er del av normal undervisningsoppfølging</li>
+                            <li>Pedagogisk observasjon er normalt del av lærerens profesjonsutøvelse</li>
+                            <li>Dokumenter at observasjonen støtter elevenes læring og utvikling</li>
+                            <li>Vurder om elever/foresatte bør informeres om observasjonsmetoden</li>
+                            <li>Følg skolens retningslinjer for elevobservasjon</li>
                         </ul>
                     </li>
                     <li><strong>Dataformål:</strong>
@@ -63,10 +70,9 @@
                             <li>Sørg for sikker lagring av enheten din</li>
                         </ul>
                     </li>
-                </ol>
+                </ul>
             </div>
         </div>
-
         <div class="card mb-4">
             <div class="card-header">
                 <h4><i class="fas fa-lock me-2"></i>Sikkerhetstiltak</h4>
@@ -97,7 +103,6 @@
                 </ul>
             </div>
         </div>
-
         <div class="card mb-4">
             <div class="card-header">
                 <h4><i class="fas fa-calendar-times me-2"></i>Dataoppbevaring</h4>
@@ -110,16 +115,9 @@
                     <li><strong>Skolens retningslinjer:</strong> Følg skolens retningslinjer for dokumentasjon</li>
                     <li><strong>Automatisk sletting:</strong> Vurder å implementere automatisk sletting av gamle data</li>
                 </ul>
-                
-                <div class="alert alert-warning mt-3">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Merk:</strong> Konsulter med skolens datavernombud eller ledelse for spesifikke 
-                    retningslinjer som gjelder for din institusjon.
-                </div>
             </div>
         </div>
     </div>
-
     <div class="col-lg-4">
         <div class="card">
             <div class="card-header">
@@ -128,15 +126,18 @@
             <div class="card-body">
                 <h6>Kan elever/foresatte se dataene?</h6>
                 <p>Ja, du kan eksportere eller vise data til elever/foresatte på forespørsel, siden alt lagres lokalt.</p>
-
                 <h6>Hva skjer hvis enheten mistes?</h6>
                 <p>Med skjermlås og lokal lagring er risikoen lav, men ha backup og slett appen fra mistet enhet hvis mulig.</p>
-
                 <h6>Kan data deles med andre lærere?</h6>
                 <p>Kun hvis det er pedagogisk begrunnet og i tråd med skolens retningslinjer. Vurder personvernet.</p>
+                <h6>Er dataene mine sikre?</h6>
+                <p>Ja - siden alt lagres lokalt på din enhet og aldri sendes noe sted, har du full kontroll. Bruk enhetens sikkerhetsfunksjoner (skjermlås, kryptering).</p>
+                <h6>Kan andre få tilgang til dataene?</h6>
+                <p>Kun hvis de får fysisk tilgang til din ulåste enhet. Appen sender aldri data over nettet.</p>
+                <h6>Hvem er ansvarlig for personvernhåndteringen?</h6>
+                <p>Skolen og læreren er dataansvarlig. Appen er kun et verktøy, som en digital notatbok.</p>
             </div>
         </div>
-
         <div class="card mt-3">
             <div class="card-header bg-success text-white">
                 <h5><i class="fas fa-check-circle me-2"></i>Personvernfordeler</h5>
@@ -148,7 +149,16 @@
                     <li><i class="fas fa-check text-success me-2"></i>Full kontroll over data</li>
                     <li><i class="fas fa-check text-success me-2"></i>Enkel sletting av data</li>
                     <li><i class="fas fa-check text-success me-2"></i>Transparent databruk</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Ingen tredjepart involvert</li>
                 </ul>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-envelope me-2"></i>Kontakt</h5>
+            </div>
+            <div class="card-body">
+                <p>Spørsmål om appen?<br>Kontakt oss på <a href="mailto:kenneth@laererliv.no">kenneth@laererliv.no</a> for tekniske spørsmål om appens funksjonalitet.</p>
             </div>
         </div>
     </div>
