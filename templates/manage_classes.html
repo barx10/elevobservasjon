@@ -12,6 +12,14 @@
     </div>
 </div>
 
+<!-- Eksport til Excel -->
+<div class="mb-4">
+    <a href="{{ url_for('export_excel') }}" class="btn btn-outline-success">
+        <i class="fas fa-file-excel me-1"></i> Last ned alle observasjoner (Excel)
+    </a>
+    <span class="text-muted ms-2" style="font-size:0.95em;">Eksporter alle observasjoner til Excel for deling eller dokumentasjon.</span>
+</div>
+
 <!-- Add new class -->
 <div class="row mb-4">
     <div class="col-md-6">
@@ -105,20 +113,54 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Etter submit: sett fokus tilbake til input og tøm feltet
+function enableStudentFormAjax() {
     document.querySelectorAll('.add-student-form').forEach(function(form) {
+        if (form.dataset.ajaxified) return; // Unngå dobbel binding
+        form.dataset.ajaxified = 'true';
         form.addEventListener('submit', function(e) {
-            // Vent til etter reload hvis ikke AJAX
-            setTimeout(() => {
-                const input = form.querySelector('.student-name-input');
-                if (input) {
-                    input.value = '';
-                    input.focus();
+            e.preventDefault();
+            const input = form.querySelector('.student-name-input');
+            const classId = form.querySelector('input[name="class_id"]').value;
+            const studentName = input.value.trim();
+            if (!studentName) return;
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Legger til...';
+            fetch(form.action, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `class_id=${encodeURIComponent(classId)}&student_name=${encodeURIComponent(studentName)}`
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Bytt ut hele accordion med ny HTML og behold fokus på riktig input
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newAccordion = doc.querySelector('#classAccordion');
+                if (newAccordion) {
+                    const oldAccordion = document.querySelector('#classAccordion');
+                    oldAccordion.outerHTML = newAccordion.outerHTML;
+                    // Kjør AJAX-setup på nytt for nye forms
+                    setTimeout(() => {
+                        enableStudentFormAjax();
+                        const newForm = document.querySelector(`form.add-student-form input[name='class_id'][value='${classId}']`);
+                        if (newForm) {
+                            const inputField = newForm.closest('form').querySelector('.student-name-input');
+                            if (inputField) inputField.focus();
+                        }
+                    }, 50);
+                } else {
+                    window.location.reload();
                 }
-            }, 100);
+            })
+            .catch(() => window.location.reload())
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-user-plus me-1"></i>Legg til elev';
+            });
         });
     });
-});
+}
+document.addEventListener('DOMContentLoaded', enableStudentFormAjax);
 </script>
 {% endblock %}

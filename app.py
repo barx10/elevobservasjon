@@ -1,10 +1,12 @@
 import os
 import logging
 from datetime import datetime, date
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response, send_file
 from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
 import csv
+import io
+import openpyxl
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -300,20 +302,45 @@ def student_observation_history(student_id):
 
 @app.route('/export_data')
 def export_data():
-    """Export all observations as CSV"""
+    """Export all observations as JSON"""
     from models import Observation, Student, Class
     observations = Observation.query.all()
-    def generate():
-        yield 'Elev,Klasse,Observasjonstype,Notater,Tidspunkt\n'
-        for obs in observations:
-            elev = obs.student.name
-            klasse = obs.student.class_ref.name
-            obs_type = obs.observation_type
-            notater = (obs.notes or '').replace('\n', ' ')
-            tidspunkt = obs.timestamp.strftime('%Y-%m-%d %H:%M')
-            yield f'"{elev}","{klasse}","{obs_type}","{notater}","{tidspunkt}"\n'
-    return Response(generate(), mimetype='text/csv',
-                    headers={'Content-Disposition': 'attachment; filename=observasjoner.csv'})
+    data = []
+    for obs in observations:
+        elev = obs.student.name
+        klasse = obs.student.class_ref.name
+        obs_type = obs.observation_type
+        notater = (obs.notes or '').replace('\n', ' ')
+        tidspunkt = obs.timestamp.strftime('%Y-%m-%d %H:%M')
+        data.append({
+            'Elev': elev,
+            'Klasse': klasse,
+            'Observasjonstype': obs_type,
+            'Notater': notater,
+            'Tidspunkt': tidspunkt
+        })
+    return jsonify(data)
+
+@app.route('/export_excel')
+def export_excel():
+    """Export all observations to an Excel file"""
+    from models import Observation, Student, Class
+    observations = Observation.query.all()
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Observasjoner"
+    ws.append(["Elev", "Klasse", "Observasjonstype", "Notater", "Tidspunkt"])
+    for obs in observations:
+        elev = obs.student.name
+        klasse = obs.student.class_ref.name
+        obs_type = obs.observation_type
+        notater = (obs.notes or '').replace('\n', ' ')
+        tidspunkt = obs.timestamp.strftime('%Y-%m-%d %H:%M')
+        ws.append([elev, klasse, obs_type, notater, tidspunkt])
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output, as_attachment=True, download_name="observasjoner.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5050, debug=True)
