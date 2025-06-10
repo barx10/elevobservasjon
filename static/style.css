@@ -210,3 +210,50 @@ body {
         color: black !important;
     }
 }
+
+/* --- STATISTICS FILTERBAR & TABLE ENHANCEMENTS --- */
+.sticky-filterbar {
+    position: sticky;
+    top: 70px; /* adjust if navbar height changes */
+    z-index: 100;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border-radius: 0 0 12px 12px;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-maincat.active,
+.filter-maincat:focus {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.15rem rgba(0,123,255,0.15);
+}
+
+.filter-maincat {
+    min-width: 120px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: background 0.15s, color 0.15s, border 0.15s;
+}
+
+/* Hide table columns/summary cards when filtered */
+.maincat-th[style*="display: none"],
+.subcat-th[style*="display: none"],
+.subcat-td[style*="display: none"],
+.summary-card[style*="display: none"] {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .sticky-filterbar {
+        top: 56px;
+        padding-bottom: 0.25rem;
+    }
+    .filter-maincat {
+        min-width: 90px;
+        font-size: 0.95rem;
+        padding: 10px 8px;
+    }
+}

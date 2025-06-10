@@ -1,7 +1,7 @@
 import os
 import logging
-from datetime import datetime, date
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response, send_file
+from datetime import datetime, date, timedelta
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response, send_file, session
 from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
 import csv
@@ -163,37 +163,92 @@ def observe_class(class_id):
     """Observation interface for a specific class"""
     selected_class = Class.query.get_or_404(class_id)
     students = Student.query.filter_by(class_id=class_id).order_by(Student.name).all()
-    
     if not students:
         flash('Ingen elever i denne klassen. Legg til elever først.', 'warning')
         return redirect(url_for('manage_classes'))
-    
-    return render_template('observe_class.html', 
-                         selected_class=selected_class, 
-                         students=students)
+    return render_template(
+        'observe_class.html',
+        selected_class=selected_class,
+        students=students,
+        observation_categories={
+    'faglig_initiativ': [
+        'stiller_sporsmal',
+        'utforsker_tema',
+        'faglige_innspill',
+        'bruker_fagbegreper',
+    ],
+    'sosialt_samspill': [
+        'hjelper_medelever',
+        'samarbeider_i_gruppe',
+        'inkluderer_andre',
+        'viser_empati',
+    ],
+    'selvstendighet_utholdenhet': [
+        'jobber_jevnt',
+        'folger_opp_oppgaver',
+        'fullforer_arbeid',
+        'viser_talmodighet',
+    ],
+    'engasjement_tilstede': [
+        'rekker_opp_handa',
+        'deltar_aktivt',
+        'viser_interesse',
+        'holder_seg_til_fag',
+    ],
+    'kreativitet_fleksibilitet': [
+        'tenker_nytt',
+        'ulike_losninger',
+        'kommer_med_forslag',
+        'viser_humor',
+    ]
+},
+        observation_display={
+            'stiller_sporsmal': 'Stiller spørsmål',
+            'utforsker_tema': 'Utforsker tema på egen hånd',
+            'faglige_innspill': 'Kommer med faglige innspill',
+            'bruker_fagbegreper': 'Bruker fagbegreper i samtale',
+            'hjelper_medelever': 'Hjelper medelever',
+            'samarbeider_i_gruppe': 'Samarbeider i gruppe',
+            'inkluderer_andre': 'Inkluderer andre',
+            'viser_empati': 'Viser empati eller støtte',
+            'jobber_jevnt': 'Jobber jevnt uten hjelp',
+            'folger_opp_oppgaver': 'Følger opp egne oppgaver',
+            'fullforer_arbeid': 'Fullfører arbeid selv om det er krevende',
+            'viser_talmodighet': 'Viser tålmodighet og fokus',
+            'rekker_opp_handa': 'Rekker opp hånda',
+            'deltar_aktivt': 'Deltar aktivt i klassesamtaler',
+            'viser_interesse': 'Viser interesse for faget',
+            'holder_seg_til_fag': 'Holder seg til faglige aktiviteter',
+            'tenker_nytt': 'Tenker nytt',
+            'ulike_losninger': 'Løser oppgaver på uvanlige måter',
+            'kommer_med_forslag': 'Kommer med forslag eller ideer',
+            'viser_humor': 'Viser humor eller personlig uttrykk',
+            'egne_notater': 'Egne notater',
+        }
+    )
 
 @app.route('/record_observation', methods=['POST'])
 def record_observation():
     """Record an observation for a student"""
+    from datetime import timedelta
     student_id = request.form.get('student_id')
     observation_type = request.form.get('observation_type')
     notes = request.form.get('notes', '').strip()
-    
+
+    # Slett observasjoner eldre enn 30 dager
+    cutoff_date = datetime.now() - timedelta(days=30)
+    deleted = Observation.query.filter(Observation.timestamp < cutoff_date).delete()
+    if deleted:
+        db.session.commit()
+
     if not student_id or not observation_type:
         return jsonify({'success': False, 'message': 'Manglende data'})
     
-    # Validate observation type
-    valid_types = [
-        'stiller_sporsmal',
-        'samarbeider_med_andre',
-        'tar_initiativ',
-        'ferdigstiller_oppgaver',
-        'behover_veiledning',
-        'er_distrahert',
-        'viser_glede_interesse',
-        'tilbaketrukket',
-        'egne_notater'
-    ]
+    # --- NY KATEGORIVALIDERING ---
+    valid_types = []
+    for undercats in OBSERVATION_CATEGORIES.values():
+        valid_types.extend(undercats)
+    valid_types.append('egne_notater')
     if observation_type not in valid_types:
         return jsonify({'success': False, 'message': 'Ugyldig observasjonstype'})
     
@@ -225,42 +280,65 @@ def record_observation():
 def statistics():
     """Show engagement statistics"""
     classes = Class.query.all()
-    print(f"DEBUG: Statistics - Found {len(classes)} classes")
-    for cls in classes:
-        print(f"DEBUG: Statistics - Class: {cls.name} (ID: {cls.id})")
     selected_class_id = request.args.get('class_id', type=int)
-    
     if selected_class_id:
         selected_class = Class.query.get(selected_class_id)
         students = Student.query.filter_by(class_id=selected_class_id).all()
     else:
         selected_class = None
         students = Student.query.all()
-    
-    # Calculate statistics for each student
+    # Bygg statistikk for alle underkategorier
+    from models import Observation
+    # Map for visning
+    observation_display = {
+        # Faglig initiativ
+        'stiller_sporsmal': 'Stiller spørsmål',
+        'utforsker_tema': 'Utforsker tema på egen hånd',
+        'faglige_innspill': 'Kommer med faglige innspill',
+        'bruker_fagbegreper': 'Bruker fagbegreper i samtale',
+        # Sosialt samspill
+        'hjelper_medelever': 'Hjelper medelever',
+        'samarbeider_i_gruppe': 'Samarbeider i gruppe',
+        'inkluderer_andre': 'Inkluderer andre',
+        'viser_empati': 'Viser empati eller støtte',
+        # Selvstendighet og utholdenhet
+        'jobber_jevnt': 'Jobber jevnt uten hjelp',
+        'folger_opp_oppgaver': 'Følger opp egne oppgaver',
+        'fullforer_arbeid': 'Fullfører arbeid selv om det er krevende',
+        'viser_talmodighet': 'Viser tålmodighet og fokus',
+        # Engasjement og tilstedeværelse
+        'rekker_opp_handa': 'Rekker opp hånda',
+        'deltar_aktivt': 'Deltar aktivt i klassesamtaler',
+        'viser_interesse': 'Viser interesse for faget',
+        'holder_seg_til_fag': 'Holder seg til faglige aktiviteter',
+        # Kreativitet og fleksibilitet
+        'tenker_nytt': 'Tenker nytt',
+        'ulike_losninger': 'Løser oppgaver på uvanlige måter',
+        'kommer_med_forslag': 'Kommer med forslag eller ideer',
+        'viser_humor': 'Viser humor eller personlig uttrykk',
+        # Egne notater
+        'egne_notater': 'Egne notater',
+    }
+    # Bygg stats
     student_stats = []
     for student in students:
-        stats = {
-            'student': student,
-            'stiller_sporsmal': Observation.query.filter_by(student_id=student.id, observation_type='stiller_sporsmal').count(),
-            'samarbeider_med_andre': Observation.query.filter_by(student_id=student.id, observation_type='samarbeider_med_andre').count(),
-            'tar_initiativ': Observation.query.filter_by(student_id=student.id, observation_type='tar_initiativ').count(),
-            'ferdigstiller_oppgaver': Observation.query.filter_by(student_id=student.id, observation_type='ferdigstiller_oppgaver').count(),
-            'behover_veiledning': Observation.query.filter_by(student_id=student.id, observation_type='behover_veiledning').count(),
-            'er_distrahert': Observation.query.filter_by(student_id=student.id, observation_type='er_distrahert').count(),
-            'viser_glede_interesse': Observation.query.filter_by(student_id=student.id, observation_type='viser_glede_interesse').count(),
-            'tilbaketrukket': Observation.query.filter_by(student_id=student.id, observation_type='tilbaketrukket').count(),
-        }
-        stats['total'] = sum([stats[key] for key in stats if key != 'student'])
+        stats = {'student': student}
+        total = 0
+        for hoved, under in OBSERVATION_CATEGORIES.items():
+            for underkat in under:
+                count = Observation.query.filter_by(student_id=student.id, observation_type=underkat).count()
+                stats[underkat] = count
+                total += count
+        stats['total'] = total
         student_stats.append(stats)
-    
-    # Sort by total observations (most active first)
+    # Sorter på total
     student_stats.sort(key=lambda x: x['total'], reverse=True)
-    
     return render_template('statistics.html', 
-                         classes=classes, 
-                         selected_class=selected_class,
-                         student_stats=student_stats)
+        classes=classes, 
+        selected_class=selected_class,
+        student_stats=student_stats,
+        observation_categories=OBSERVATION_CATEGORIES,
+        observation_display=observation_display)
 
 @app.route('/privacy_info')
 def privacy_info():
@@ -341,6 +419,187 @@ def export_excel():
     wb.save(output)
     output.seek(0)
     return send_file(output, as_attachment=True, download_name="observasjoner.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+# --- PIN-håndtering med fil ---
+PIN_FILE = os.path.join(app.instance_path, 'pin.txt')
+
+def get_current_pin():
+    try:
+        with open(PIN_FILE, 'r') as f:
+            return f.read().strip()
+    except Exception:
+        return os.environ.get("APP_PIN", "1234")
+
+def set_new_pin(new_pin):
+    os.makedirs(app.instance_path, exist_ok=True)
+    with open(PIN_FILE, 'w') as f:
+        f.write(new_pin.strip())
+
+# PIN for innlogging (kan settes via miljøvariabel eller hardkodes)
+APP_PIN = os.environ.get("APP_PIN", "1234")
+
+def login_required(view_func):
+    from functools import wraps
+    @wraps(view_func)
+    def wrapped_view(*args, **kwargs):
+        if not session.get("logged_in"):
+            return redirect(url_for("login", next=request.url))
+        return view_func(*args, **kwargs)
+    return wrapped_view
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        pin = request.form.get('pin', '')
+        if pin == get_current_pin():
+            session['logged_in'] = True
+            # Fjern gamle flash-meldinger etter innlogging
+            session.pop('_flashes', None)
+            # Sjekk om PIN fortsatt er standard (1234)
+            if get_current_pin() == '1234':
+                return redirect(url_for('change_pin'))
+            next_url = request.args.get('next') or url_for('index')
+            return redirect(next_url)
+        else:
+            error = 'Feil PIN-kode. Prøv igjen.'
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    # Tøm eventuelle gamle flash-meldinger etter utlogging
+    session['_flashes'] = []
+    flash('Du er logget ut.', 'info')
+    return redirect(url_for('login'))
+
+@app.route('/change_pin', methods=['GET', 'POST'])
+def change_pin():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    error = None
+    success = None
+    if request.method == 'POST':
+        old_pin = request.form.get('old_pin', '')
+        new_pin = request.form.get('new_pin', '')
+        confirm_pin = request.form.get('confirm_pin', '')
+        if old_pin != get_current_pin():
+            error = 'Gammel PIN er feil.'
+        elif not new_pin or len(new_pin) < 4:
+            error = 'Ny PIN må være minst 4 tegn.'
+        elif new_pin != confirm_pin:
+            error = 'PIN-kodene er ikke like.'
+        else:
+            set_new_pin(new_pin)
+            success = 'PIN er endret!'
+            return redirect(url_for('index'))
+    return render_template('change_pin.html', error=error, success=success)
+
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    error = None
+    success = None
+    # PIN-bytte via POST fra settings-siden
+    if request.method == 'POST' and 'old_pin' in request.form:
+        old_pin = request.form.get('old_pin', '')
+        new_pin = request.form.get('new_pin', '')
+        confirm_pin = request.form.get('confirm_pin', '')
+        if old_pin != get_current_pin():
+            error = 'Gammel PIN er feil.'
+        elif not new_pin or len(new_pin) < 4:
+            error = 'Ny PIN må være minst 4 tegn.'
+        elif new_pin != confirm_pin:
+            error = 'PIN-kodene er ikke like.'
+        else:
+            set_new_pin(new_pin)
+            success = 'PIN er endret!'
+    return render_template(
+        'settings.html',
+        observation_categories=OBSERVATION_CATEGORIES,
+        observation_display={
+            'stiller_sporsmal': 'Stiller spørsmål',
+            'utforsker_tema': 'Utforsker tema på egen hånd',
+            'faglige_innspill': 'Kommer med faglige innspill',
+            'bruker_fagbegreper': 'Bruker fagbegreper i samtale',
+            'hjelper_medelever': 'Hjelper medelever',
+            'samarbeider_i_gruppe': 'Samarbeider i gruppe',
+            'inkluderer_andre': 'Inkluderer andre',
+            'viser_empati': 'Viser empati eller støtte',
+            'jobber_jevnt': 'Jobber jevnt uten hjelp',
+            'folger_opp_oppgaver': 'Følger opp egne oppgaver',
+            'fullforer_arbeid': 'Fullfører arbeid selv om det er krevende',
+            'viser_talmodighet': 'Viser tålmodighet og fokus',
+            'rekker_opp_handa': 'Rekker opp hånda',
+            'deltar_aktivt': 'Deltar aktivt i klassesamtaler',
+            'viser_interesse': 'Viser interesse for faget',
+            'holder_seg_til_fag': 'Holder seg til faglige aktiviteter',
+            'tenker_nytt': 'Tenker nytt',
+            'ulike_losninger': 'Løser oppgaver på uvanlige måter',
+            'kommer_med_forslag': 'Kommer med forslag eller ideer',
+            'viser_humor': 'Viser humor eller personlig uttrykk',
+            'egne_notater': 'Egne notater',
+        },
+        error=error,
+        success=success
+    )
+
+@app.route('/reset_app', methods=['POST'])
+def reset_app():
+    # Slett alle elever, klasser og observasjoner
+    Observation.query.delete()
+    Student.query.delete()
+    Class.query.delete()
+    db.session.commit()
+    return ('', 204)
+
+# Beskytt alle relevante ruter med login_required
+app.view_functions['index'] = login_required(app.view_functions['index'])
+app.view_functions['manage_classes'] = login_required(app.view_functions['manage_classes'])
+app.view_functions['add_class'] = login_required(app.view_functions['add_class'])
+app.view_functions['add_student'] = login_required(app.view_functions['add_student'])
+app.view_functions['delete_class'] = login_required(app.view_functions['delete_class'])
+app.view_functions['delete_student'] = login_required(app.view_functions['delete_student'])
+app.view_functions['observe_class'] = login_required(app.view_functions['observe_class'])
+app.view_functions['record_observation'] = login_required(app.view_functions['record_observation'])
+app.view_functions['statistics'] = login_required(app.view_functions['statistics'])
+app.view_functions['student_observation_history'] = login_required(app.view_functions['student_observation_history'])
+app.view_functions['export_data'] = login_required(app.view_functions['export_data'])
+app.view_functions['export_excel'] = login_required(app.view_functions['export_excel'])
+# privacy_info forblir åpen
+
+# --- NYE OBSERVASJONSKATEGORIER MED UNDERKATEGORIER ---
+OBSERVATION_CATEGORIES = {
+    'faglig_initiativ': [
+        'stiller_sporsmal',
+        'utforsker_tema',
+        'faglige_innspill',
+        'bruker_fagbegreper',
+    ],
+    'sosialt_samspill': [
+        'hjelper_medelever',
+        'samarbeider_i_gruppe',
+        'inkluderer_andre',
+        'viser_empati',
+    ],
+    'selvstendighet_utholdenhet': [
+        'jobber_jevnt',
+        'folger_opp_oppgaver',
+        'fullforer_arbeid',
+        'viser_talmodighet',
+    ],
+    'engasjement_tilstede': [
+        'rekker_opp_handa',
+        'deltar_aktivt',
+        'viser_interesse',
+        'holder_seg_til_fag',
+    ],
+    'kreativitet_fleksibilitet': [
+        'tenker_nytt',
+        'ulike_losninger',
+        'kommer_med_forslag',
+        'viser_humor',
+    ]
+}
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5050, debug=True)

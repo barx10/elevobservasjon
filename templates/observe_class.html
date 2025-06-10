@@ -18,37 +18,30 @@
     </div>
 </div>
 
-<!-- Observation buttons legend -->
+<!-- Observation categories legend (accordion style) -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <h6 class="card-title">Observasjonskategorier:</h6>
-                <div class="row text-center">
-                    <div class="col-6 col-md">
-                        <span class="badge bg-primary p-2">Stiller spørsmål</span>
+                <div id="categoryAccordion">
+                    {% set cat_colors = ['primary','info','success','warning','danger'] %}
+                    {% for hoved, under in observation_categories.items() %}
+                    <div class="mb-2">
+                        <button class="btn btn-outline-{{ cat_colors[loop.index0] }} w-100 text-start maincat-legend-btn" type="button" data-bs-toggle="collapse" data-bs-target="#legend-{{ hoved }}" aria-expanded="false" aria-controls="legend-{{ hoved }}">
+                            <strong>{{ hoved|replace('_', ' ')|title }}</strong>
+                        </button>
+                        <div class="collapse" id="legend-{{ hoved }}">
+                            <div class="card card-body p-2 mt-1 mb-2">
+                                <ul class="mb-0 ps-3">
+                                    {% for underkat in under %}
+                                    <li>{{ observation_display[underkat] }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-6 col-md">
-                        <span class="badge bg-info p-2">Samarbeider</span>
-                    </div>
-                    <div class="col-6 col-md">
-                        <span class="badge bg-success p-2">Tar initiativ</span>
-                    </div>
-                    <div class="col-6 col-md">
-                        <span class="badge bg-secondary p-2">Ferdigstiller oppgaver</span>
-                    </div>
-                    <div class="col-6 col-md">
-                        <span class="badge bg-warning p-2">Behøver veiledning</span>
-                    </div>
-                    <div class="col-6 col-md">
-                        <span class="badge bg-danger p-2">Er distrahert</span>
-                    </div>
-                    <div class="col-6 col-md">
-                        <span class="badge bg-dark p-2">Viser glede/interesse</span>
-                    </div>
-                    <div class="col-6 col-md">
-                        <span class="badge bg-light text-dark p-2">Tilbaketrukket</span>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -86,9 +79,6 @@
       </div>
       <div class="modal-body">
         <div id="observeStudentButtons" class="d-grid gap-2"></div>
-        <button class="btn btn-outline-info btn-sm mt-3 w-100" id="observeShowStatsBtn">
-          <i class="fas fa-chart-line me-1"></i> Vis utvikling
-        </button>
         <button class="btn btn-outline-secondary btn-sm mt-2 w-100" id="observeShowNotesBtn">
           <i class="fas fa-pen me-1"></i> Egne notater
         </button>
@@ -130,6 +120,57 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block styles %}
+<style>
+/* Accordion-style hovedkategori-knapper */
+#observeStudentButtons .maincat-btn {
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: background 0.15s, color 0.15s;
+}
+#observeStudentButtons .maincat-btn.active {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+#observeStudentButtons .subcat-group {
+    animation: fadeIn 0.2s;
+    margin-bottom: 0.5rem;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+#observeStudentButtons .subcat-btn {
+    font-size: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+}
+#observeStudentButtons .back-btn {
+    margin-top: 0.5rem;
+}
+.maincat-legend-btn {
+    font-size: 1.08rem;
+    font-weight: 600;
+    border-radius: 8px;
+    margin-bottom: 0.2rem;
+    transition: background 0.15s, color 0.15s;
+}
+.maincat-legend-btn[aria-expanded="true"] {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+#categoryAccordion .card-body ul {
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -312,40 +353,112 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function showObserveStudentModal(studentId, studentName) {
     document.getElementById('observeStudentName').textContent = studentName;
-    // Lag knapper for alle observasjonskategorier
     const categories = [
-        {type: 'stiller_sporsmal', label: 'Stiller spørsmål', icon: 'fa-question-circle', btn: 'btn-primary'},
-        {type: 'samarbeider_med_andre', label: 'Samarbeider', icon: 'fa-users', btn: 'btn-info'},
-        {type: 'tar_initiativ', label: 'Tar initiativ', icon: 'fa-bolt', btn: 'btn-success'},
-        {type: 'ferdigstiller_oppgaver', label: 'Ferdigstiller oppgaver', icon: 'fa-check-circle', btn: 'btn-secondary'},
-        {type: 'behover_veiledning', label: 'Behøver veiledning', icon: 'fa-hands-helping', btn: 'btn-warning'},
-        {type: 'er_distrahert', label: 'Er distrahert', icon: 'fa-random', btn: 'btn-danger'},
-        {type: 'viser_glede_interesse', label: 'Viser glede/interesse', icon: 'fa-smile-beam', btn: 'btn-dark'},
-        {type: 'tilbaketrukket', label: 'Tilbaketrukket', icon: 'fa-user-secret', btn: 'btn-light text-dark'}
+        {
+            key: 'faglig_initiativ',
+            label: 'Faglig initiativ',
+            color: 'primary',
+            subs: [
+                {type: 'stiller_sporsmal', label: 'Stiller spørsmål'},
+                {type: 'utforsker_tema', label: 'Utforsker tema på egen hånd'},
+                {type: 'faglige_innspill', label: 'Kommer med faglige innspill'},
+                {type: 'bruker_fagbegreper', label: 'Bruker fagbegreper i samtale'}
+            ]
+        },
+        {
+            key: 'sosialt_samspill',
+            label: 'Sosialt samspill',
+            color: 'info',
+            subs: [
+                {type: 'hjelper_medelever', label: 'Hjelper medelever'},
+                {type: 'samarbeider_i_gruppe', label: 'Samarbeider i gruppe'},
+                {type: 'inkluderer_andre', label: 'Inkluderer andre'},
+                {type: 'viser_empati', label: 'Viser empati eller støtte'}
+            ]
+        },
+        {
+            key: 'selvstendighet_utholdenhet',
+            label: 'Selvstendighet og utholdenhet',
+            color: 'success',
+            subs: [
+                {type: 'jobber_jevnt', label: 'Jobber jevnt uten hjelp'},
+                {type: 'folger_opp_oppgaver', label: 'Følger opp egne oppgaver'},
+                {type: 'fullforer_arbeid', label: 'Fullfører arbeid selv om det er krevende'},
+                {type: 'viser_talmodighet', label: 'Viser tålmodighet og fokus'}
+            ]
+        },
+        {
+            key: 'engasjement_tilstede',
+            label: 'Engasjement og tilstedeværelse',
+            color: 'warning',
+            subs: [
+                {type: 'rekker_opp_handa', label: 'Rekker opp hånda'},
+                {type: 'deltar_aktivt', label: 'Deltar aktivt i klassesamtaler'},
+                {type: 'viser_interesse', label: 'Viser interesse for faget'},
+                {type: 'holder_seg_til_fag', label: 'Holder seg til faglige aktiviteter'}
+            ]
+        },
+        {
+            key: 'kreativitet_fleksibilitet',
+            label: 'Kreativitet og fleksibilitet',
+            color: 'danger',
+            subs: [
+                {type: 'tenker_nytt', label: 'Tenker nytt'},
+                {type: 'ulike_losninger', label: 'Løser oppgaver på uvanlige måter'},
+                {type: 'kommer_med_forslag', label: 'Kommer med forslag eller ideer'},
+                {type: 'viser_humor', label: 'Viser humor eller personlig uttrykk'}
+            ]
+        }
     ];
     const btnsDiv = document.getElementById('observeStudentButtons');
     btnsDiv.innerHTML = '';
-    categories.forEach(cat => {
+    // Vis hovedkategorier
+    categories.forEach((cat) => {
         const btn = document.createElement('button');
-        btn.className = `btn ${cat.btn} observation-btn`;
-        btn.innerHTML = `<i class='fas ${cat.icon} me-1'></i> ${cat.label}`;
+        btn.className = `btn btn-outline-${cat.color} maincat-btn w-100`;
+        btn.textContent = cat.label;
         btn.onclick = function() {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Registrerer...';
-            fetch('/record_observation', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `student_id=${studentId}&observation_type=${cat.type}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                showFeedback(data.message, data.success ? 'success' : 'danger');
-            })
-            .catch(() => showFeedback('Det oppstod en feil', 'danger'))
-            .finally(() => {
-                btn.disabled = false;
-                btn.innerHTML = `<i class='fas ${cat.icon} me-1'></i> ${cat.label}`;
+            btnsDiv.innerHTML = '';
+            // Hovedkategori-knapp (aktiv)
+            const activeBtn = document.createElement('button');
+            activeBtn.className = `btn btn-${cat.color} maincat-btn active w-100 mb-2`;
+            activeBtn.textContent = cat.label;
+            activeBtn.disabled = true;
+            btnsDiv.appendChild(activeBtn);
+            // Underkategorier
+            const subcatDiv = document.createElement('div');
+            subcatDiv.className = 'subcat-group';
+            cat.subs.forEach(sub => {
+                const subBtn = document.createElement('button');
+                subBtn.className = `btn btn-${cat.color} subcat-btn w-100`;
+                subBtn.textContent = sub.label;
+                subBtn.onclick = function() {
+                    subBtn.disabled = true;
+                    subBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Registrerer...';
+                    fetch('/record_observation', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: `student_id=${studentId}&observation_type=${sub.type}`
+                    })
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        showFeedback(data.message, data.success ? 'success' : 'danger');
+                    })
+                    .catch(function() { showFeedback('Det oppstod en feil', 'danger'); })
+                    .finally(function() {
+                        subBtn.disabled = false;
+                        subBtn.textContent = sub.label;
+                    });
+                };
+                subcatDiv.appendChild(subBtn);
             });
+            btnsDiv.appendChild(subcatDiv);
+            // Tilbake-knapp
+            const backBtn = document.createElement('button');
+            backBtn.className = 'btn btn-outline-secondary back-btn w-100';
+            backBtn.textContent = 'Tilbake til hovedkategorier';
+            backBtn.onclick = function() { showObserveStudentModal(studentId, studentName); };
+            btnsDiv.appendChild(backBtn);
         };
         btnsDiv.appendChild(btn);
     });
@@ -364,13 +477,13 @@ function showStudentStats(studentId, studentName) {
     const modal = new bootstrap.Modal(document.getElementById('studentStatsModal'));
     modal.show();
     fetch(`/student_observation_history/${studentId}`)
-        .then(response => response.json())
-        .then(data => {
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
             renderStudentStatsChart(data);
             // Tving resize etter at modal er synlig
-            setTimeout(() => forceResizeChart(window.studentStatsChart), 300);
+            setTimeout(function() { forceResizeChart(window.studentStatsChart); }, 300);
         })
-        .catch(error => {
+        .catch(function(error) {
             console.error('Feil ved henting av elevdata:', error);
             renderStudentStatsChart(null, 'Kunne ikke hente data');
         });

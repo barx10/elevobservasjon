@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logg inn - Et blikk for eleven</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5" style="max-width: 400px;">
+        <div class="card shadow">
+            <div class="card-body">
+                <h3 class="card-title mb-4 text-center">Logg inn</h3>
+                <h2 class="text-center mb-2" style="font-weight:600;">Et blikk for eleven</h2>
+                <h5 class="text-center mb-4 text-muted" style="font-weight:normal;">et verktøy for pedagogisk observasjon</h5>
+                <div class="alert alert-info" id="pin-info">
+                    <strong>Førstegangsbruker?</strong> Logg inn med PIN <b>1234</b>.<br>
+                    Du vil bli bedt om å lage din egen PIN etter første innlogging.
+                </div>
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="pin" class="form-label">PIN-kode</label>
+                        <input type="password" class="form-control" id="pin" name="pin" maxlength="12" autofocus required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Logg inn</button>
+                </form>
+            </div>
+        </div>
+        <p class="text-center mt-3 text-muted"></p>
+    </div>
+</body>
+</html>

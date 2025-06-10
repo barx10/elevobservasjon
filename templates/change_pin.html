@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endre PIN - Et blikk for eleven</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5" style="max-width: 400px;">
+        <div class="card shadow">
+            <div class="card-body">
+                <h3 class="card-title mb-4 text-center">Endre PIN</h3>
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                {% if success %}
+                    <div class="alert alert-success">{{ success }}</div>
+                {% endif %}
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="old_pin" class="form-label">Nåværende PIN</label>
+                        <input type="password" class="form-control" id="old_pin" name="old_pin" maxlength="12" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_pin" class="form-label">Ny PIN</label>
+                        <input type="password" class="form-control" id="new_pin" name="new_pin" maxlength="12" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_pin" class="form-label">Gjenta ny PIN</label>
+                        <input type="password" class="form-control" id="confirm_pin" name="confirm_pin" maxlength="12" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Endre PIN</button>
+                </form>
+                <a href="{{ url_for('index') }}" class="btn btn-link w-100 mt-2">Tilbake</a>
+            </div>
+        </div>
+        <p class="text-center mt-3 text-muted">Et blikk for eleven</p>
+    </div>
+</body>
+</html>

@@ -12,6 +12,23 @@
     </div>
 </div>
 
+<!-- Hovedkategorier for filtrering -->
+<div class="row mb-4 sticky-filterbar">
+    <div class="col-12">
+        <div class="card mb-0">
+            <div class="card-body text-center py-3">
+                <h6 class="card-title mb-3">Filtrer på hovedkategori</h6>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <button class="btn btn-outline-primary filter-maincat" data-maincat="alle">Alle</button>
+                    {% for hoved, under in observation_categories.items() %}
+                        <button class="btn btn-outline-primary filter-maincat" data-maincat="{{ hoved }}">{{ hoved|replace('_', ' ')|title }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Class filter -->
 <div class="row mb-4">
     <div class="col-md-6">
@@ -46,106 +63,42 @@
             {% else %}
                 <h3>Statistikk for alle klasser</h3>
             {% endif %}
-            
             <div class="table-responsive">
-                <table class="table table-striped">
+                <table class="table table-striped align-middle" id="statsTable">
                     <thead>
                         <tr>
-                            <th>Elev</th>
-                            <th>Klasse</th>
-                            <th class="text-center">
-                                <span class="badge bg-primary">Stiller spørsmål</span>
-                            </th>
-                            <th class="text-center">
-                                <span class="badge bg-info">Samarbeider</span>
-                            </th>
-                            <th class="text-center">
-                                <span class="badge bg-success">Tar initiativ</span>
-                            </th>
-                            <th class="text-center">
-                                <span class="badge bg-secondary">Ferdigstiller oppgaver</span>
-                            </th>
-                            <th class="text-center">
-                                <span class="badge bg-warning">Behøver veiledning</span>
-                            </th>
-                            <th class="text-center">
-                                <span class="badge bg-danger">Er distrahert</span>
-                            </th>
-                            <th class="text-center">
-                                <span class="badge bg-dark">Viser glede/interesse</span>
-                            </th>
-                            <th class="text-center">
-                                <span class="badge bg-light text-dark">Tilbaketrukket</span>
-                            </th>
-                            <th class="text-center">Totalt</th>
+                            <th rowspan="2">Elev</th>
+                            <th rowspan="2">Klasse</th>
+                            {% for hoved, under in observation_categories.items() %}
+                                <th class="text-center maincat-th" data-maincat="{{ hoved }}" colspan="{{ under|length }}">{{ hoved|replace('_', ' ')|title }}</th>
+                            {% endfor %}
+                            <th rowspan="2" class="text-center">Totalt</th>
+                        </tr>
+                        <tr>
+                            {% for hoved, under in observation_categories.items() %}
+                                {% for underkat in under %}
+                                    <th class="text-center small subcat-th" data-maincat="{{ hoved }}">{{ observation_display[underkat] }}</th>
+                                {% endfor %}
+                            {% endfor %}
                         </tr>
                     </thead>
                     <tbody>
                         {% for stats in student_stats %}
                             <tr>
                                 <td><strong>{{ stats.student.name }}</strong></td>
-                                <td>
-                                    <span class="badge bg-dark">{{ stats.student.class_ref.name }}</span>
-                                </td>
-                                <td class="text-center">
-                                    {% if stats.stiller_sporsmal > 0 %}
-                                        <span class="badge bg-primary">{{ stats.stiller_sporsmal }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    {% if stats.samarbeider_med_andre > 0 %}
-                                        <span class="badge bg-info">{{ stats.samarbeider_med_andre }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    {% if stats.tar_initiativ > 0 %}
-                                        <span class="badge bg-success">{{ stats.tar_initiativ }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    {% if stats.ferdigstiller_oppgaver > 0 %}
-                                        <span class="badge bg-secondary">{{ stats.ferdigstiller_oppgaver }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    {% if stats.behover_veiledning > 0 %}
-                                        <span class="badge bg-warning">{{ stats.behover_veiledning }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    {% if stats.er_distrahert > 0 %}
-                                        <span class="badge bg-danger">{{ stats.er_distrahert }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    {% if stats.viser_glede_interesse > 0 %}
-                                        <span class="badge bg-dark">{{ stats.viser_glede_interesse }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    {% if stats.tilbaketrukket > 0 %}
-                                        <span class="badge bg-light text-dark">{{ stats.tilbaketrukket }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    <strong>{{ stats.total }}</strong>
-                                </td>
+                                <td><span class="badge bg-dark">{{ stats.student.class_ref.name }}</span></td>
+                                {% for hoved, under in observation_categories.items() %}
+                                    {% for underkat in under %}
+                                        <td class="text-center subcat-td" data-maincat="{{ hoved }}">
+                                            {% if stats[underkat] > 0 %}
+                                                <span class="badge bg-primary">{{ stats[underkat] }}</span>
+                                            {% else %}
+                                                <span class="text-muted">0</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                {% endfor %}
+                                <td class="text-center"><strong>{{ stats.total }}</strong></td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -159,70 +112,18 @@
         <div class="col-12">
             <h4>Sammendrag</h4>
         </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="text-primary">{{ student_stats | sum(attribute='stiller_sporsmal') }}</h3>
-                    <p class="card-text">Stiller spørsmål</p>
+        {% for hoved, under in observation_categories.items() %}
+            {% for underkat in under %}
+                <div class="col-md-6 col-lg-3 mb-3 summary-card" data-maincat="{{ hoved }}">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3 class="text-primary">{{ student_stats | sum(attribute=underkat) }}</h3>
+                            <p class="card-text">{{ observation_display[underkat] }}</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="text-info">{{ student_stats | sum(attribute='samarbeider_med_andre') }}</h3>
-                    <p class="card-text">Samarbeider</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="text-success">{{ student_stats | sum(attribute='tar_initiativ') }}</h3>
-                    <p class="card-text">Tar initiativ</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="text-secondary">{{ student_stats | sum(attribute='ferdigstiller_oppgaver') }}</h3>
-                    <p class="card-text">Ferdigstiller oppgaver</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="text-warning">{{ student_stats | sum(attribute='behover_veiledning') }}</h3>
-                    <p class="card-text">Behøver veiledning</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="text-danger">{{ student_stats | sum(attribute='er_distrahert') }}</h3>
-                    <p class="card-text">Er distrahert</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="text-dark">{{ student_stats | sum(attribute='viser_glede_interesse') }}</h3>
-                    <p class="card-text">Viser glede/interesse</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="text-muted">{{ student_stats | sum(attribute='tilbaketrukket') }}</h3>
-                    <p class="card-text">Tilbaketrukket</p>
-                </div>
-            </div>
-        </div>
+            {% endfor %}
+        {% endfor %}
     </div>
 {% else %}
     <div class="alert alert-info">
@@ -230,4 +131,41 @@
         Ingen observasjonsdata tilgjengelig ennå. Start med å registrere observasjoner for elevene dine.
     </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const maincatButtons = document.querySelectorAll('.filter-maincat');
+    const STORAGE_KEY = 'statistics_maincat_filter';
+    // Restore filter from localStorage if present
+    let saved = localStorage.getItem(STORAGE_KEY);
+    let initial = saved || 'alle';
+    let initialBtn = Array.from(maincatButtons).find(b => b.dataset.maincat === initial);
+    if (initialBtn) initialBtn.classList.add('active');
+    filterByMaincat(initial);
+
+    maincatButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const maincat = this.dataset.maincat;
+            // Marker valgt knapp
+            maincatButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            // Lagre valg
+            localStorage.setItem(STORAGE_KEY, maincat);
+            filterByMaincat(maincat);
+        });
+    });
+
+    function filterByMaincat(maincat) {
+        document.querySelectorAll('.maincat-th, .subcat-th, .subcat-td, .summary-card').forEach(el => {
+            if (maincat === 'alle' || el.dataset.maincat === maincat) {
+                el.style.display = '';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

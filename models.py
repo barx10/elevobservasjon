@@ -50,13 +50,34 @@ class Observation(db.Model):
     
     @property
     def observation_display(self):
-        """Return Norwegian display text for observation type"""
+        # Map for visning av underkategorier
         display_map = {
-            'deltar_muntlig': 'Deltar muntlig',
-            'folger_med': 'Følger med',
-            'er_stille': 'Er stille',
-            'urolig': 'Urolig',
-            'bortforklaring': 'Bortforklaring/avledning',
-            'egne_notater': 'Egne notater'
+            # Faglig initiativ
+            'stiller_sporsmal': 'Stiller spørsmål',
+            'utforsker_tema': 'Utforsker tema på egen hånd',
+            'faglige_innspill': 'Kommer med faglige innspill',
+            'bruker_fagbegreper': 'Bruker fagbegreper i samtale',
+            # Sosialt samspill
+            'hjelper_medelever': 'Hjelper medelever',
+            'samarbeider_i_gruppe': 'Samarbeider i gruppe',
+            'inkluderer_andre': 'Inkluderer andre',
+            'viser_empati': 'Viser empati eller støtte',
+            # Selvstendighet og utholdenhet
+            'jobber_jevnt': 'Jobber jevnt uten hjelp',
+            'folger_opp_oppgaver': 'Følger opp egne oppgaver',
+            'fullforer_arbeid': 'Fullfører arbeid selv om det er krevende',
+            'viser_talmodighet': 'Viser tålmodighet og fokus',
+            # Engasjement og tilstedeværelse
+            'rekker_opp_handa': 'Rekker opp hånda',
+            'deltar_aktivt': 'Deltar aktivt i klassesamtaler',
+            'viser_interesse': 'Viser interesse for faget',
+            'holder_seg_til_fag': 'Holder seg til faglige aktiviteter',
+            # Kreativitet og fleksibilitet
+            'tenker_nytt': 'Tenker nytt',
+            'ulike_losninger': 'Løser oppgaver på uvanlige måter',
+            'kommer_med_forslag': 'Kommer med forslag eller ideer',
+            'viser_humor': 'Viser humor eller personlig uttrykk',
+            # Egne notater
+            'egne_notater': 'Egne notater',
         }
         return display_map.get(self.observation_type, self.observation_type)

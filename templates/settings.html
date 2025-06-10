@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Innstillinger - Et blikk for eleven{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="fas fa-cog me-2"></i>Innstillinger</h1>
+
+<!-- Kategorivalg -->
+<div class="card mb-4">
+  <div class="card-header"><strong>Kategorivalg</strong></div>
+  <div class="card-body">
+    <p>Skru av/på hvilke hoved- og underkategorier som skal vises i observasjonsbildet.</p>
+    <div id="category-settings"></div>
+    <button class="btn btn-primary mt-3" onclick="saveCategorySettings()"><i class="fas fa-save me-1"></i>Lagre valg</button>
+    <span id="cat-save-status" class="ms-3 text-success" style="display:none;">Lagret!</span>
+  </div>
+</div>
+
+<!-- Endre PIN -->
+<div class="card mb-4">
+  <div class="card-header"><strong>Endre PIN</strong></div>
+  <div class="card-body">
+    <form id="pinForm" method="POST" action="/change_pin">
+      <div class="mb-2">
+        <label for="old_pin" class="form-label">Nåværende PIN</label>
+        <input type="password" class="form-control" id="old_pin" name="old_pin" required minlength="4">
+      </div>
+      <div class="mb-2">
+        <label for="new_pin" class="form-label">Ny PIN</label>
+        <input type="password" class="form-control" id="new_pin" name="new_pin" required minlength="4">
+      </div>
+      <div class="mb-2">
+        <label for="confirm_pin" class="form-label">Gjenta ny PIN</label>
+        <input type="password" class="form-control" id="confirm_pin" name="confirm_pin" required minlength="4">
+      </div>
+      <button type="submit" class="btn btn-secondary mt-2"><i class="fas fa-key me-1"></i>Bytt PIN</button>
+      {% if error %}<div class="text-danger mt-2">{{ error }}</div>{% endif %}
+      {% if success %}<div class="text-success mt-2">{{ success }}</div>{% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Eksport -->
+<div class="card mb-4">
+  <div class="card-header"><strong>Eksport</strong></div>
+  <div class="card-body">
+    <a href="/export_excel" class="btn btn-outline-success me-2"><i class="fas fa-file-excel me-1"></i>Eksporter til Excel</a>
+    <a href="/export_data" class="btn btn-outline-info me-2"><i class="fas fa-file-code me-1"></i>Eksporter til JSON</a>
+    <a href="/statistics" class="btn btn-outline-info me-2"><i class="fas fa-chart-line me-1"></i>Vis utvikling</a>
+  </div>
+</div>
+
+<!-- Tilbakestill app -->
+<div class="card mb-4">
+  <div class="card-header"><strong>Tilbakestill app</strong></div>
+  <div class="card-body">
+    <button class="btn btn-outline-danger" onclick="confirmReset()"><i class="fas fa-trash me-1"></i>Slett alle data og tilbakestill</button>
+    <span id="reset-status" class="ms-3 text-success" style="display:none;">Appen er tilbakestilt!</span>
+  </div>
+</div>
+
+<!-- Tema -->
+<div class="card mb-4">
+  <div class="card-header"><strong>Tema</strong></div>
+  <div class="card-body">
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="themeSwitch">
+      <label class="form-check-label" for="themeSwitch">Mørkt tema</label>
+    </div>
+  </div>
+</div>
+
+<!-- Om appen -->
+<div class="card mb-4">
+  <div class="card-header"><strong>Om appen</strong></div>
+  <div class="card-body">
+    <p>Et blikk for eleven<br>Versjon 1.0<br>Lærerliv 2025</p>
+    <a href="/privacy_info" class="btn btn-link">Personvern</a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// --- Kategorivalg (lagres i localStorage) ---
+const OBS_CATEGORIES = {{ observation_categories|tojson }};
+const OBS_DISPLAY = {{ observation_display|tojson }};
+function renderCategorySettings() {
+  const root = document.getElementById('category-settings');
+  root.innerHTML = '';
+  const saved = JSON.parse(localStorage.getItem('category_settings') || '{}');
+  Object.entries(OBS_CATEGORIES).forEach(([hoved, under], i) => {
+    const mainId = 'maincat_' + hoved;
+    const mainChecked = saved[hoved] !== false;
+    const mainDiv = document.createElement('div');
+    mainDiv.className = 'form-check form-switch mb-2';
+    mainDiv.innerHTML = `<input class="form-check-input" type="checkbox" id="${mainId}" ${mainChecked ? 'checked' : ''}>
+      <label class="form-check-label fw-bold" for="${mainId}">${hoved.replace('_',' ').charAt(0).toUpperCase() + hoved.replace('_',' ').slice(1)}</label>`;
+    root.appendChild(mainDiv);
+    // Underkategorier
+    under.forEach(underkat => {
+      const subId = 'subcat_' + underkat;
+      const subChecked = !saved[underkat] === false;
+      const subDiv = document.createElement('div');
+      subDiv.className = 'form-check ms-4';
+      subDiv.innerHTML = `<input class="form-check-input" type="checkbox" id="${subId}" ${subChecked ? 'checked' : ''}>
+        <label class="form-check-label" for="${subId}">${OBS_DISPLAY[underkat]}</label>`;
+      root.appendChild(subDiv);
+    });
+  });
+}
+function saveCategorySettings() {
+  const saved = {};
+  Object.entries(OBS_CATEGORIES).forEach(([hoved, under]) => {
+    saved[hoved] = document.getElementById('maincat_' + hoved).checked;
+    under.forEach(underkat => {
+      saved[underkat] = document.getElementById('subcat_' + underkat).checked;
+    });
+  });
+  localStorage.setItem('category_settings', JSON.stringify(saved));
+  document.getElementById('cat-save-status').style.display = '';
+  setTimeout(() => document.getElementById('cat-save-status').style.display = 'none', 1500);
+}
+document.addEventListener('DOMContentLoaded', renderCategorySettings);
+
+// --- Tema ---
+const themeSwitch = document.getElementById('themeSwitch');
+if (themeSwitch) {
+  themeSwitch.checked = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+  themeSwitch.addEventListener('change', function() {
+    document.documentElement.setAttribute('data-bs-theme', this.checked ? 'dark' : 'light');
+    localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+  });
+}
+// Last valgt tema ved oppstart
+if (localStorage.getItem('theme')) {
+  document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme'));
+}
+
+// --- Tilbakestill app ---
+function confirmReset() {
+  if (confirm('Er du sikker på at du vil slette alle data? Dette kan ikke angres.')) {
+    fetch('/reset_app', {method:'POST'}).then(() => {
+      localStorage.clear();
+      document.getElementById('reset-status').style.display = '';
+      setTimeout(() => location.reload(), 1200);
+    });
+  }
+}
+</script>
+{% endblock %}
