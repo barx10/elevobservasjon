@@ -44,9 +44,40 @@
 <div class="card mb-4">
   <div class="card-header"><strong>Eksport</strong></div>
   <div class="card-body">
-    <a href="/export_excel" class="btn btn-outline-success me-2"><i class="fas fa-file-excel me-1"></i>Eksporter til Excel</a>
-    <a href="/export_data" class="btn btn-outline-info me-2"><i class="fas fa-file-code me-1"></i>Eksporter til JSON</a>
-    <a href="/statistics" class="btn btn-outline-info me-2"><i class="fas fa-chart-line me-1"></i>Vis utvikling</a>
+    <form id="exportForm" method="POST" action="/export_data">
+      <div class="mb-3">
+        <label for="class_id_export" class="form-label">Velg klasse</label>
+        <select class="form-select" name="class_id" id="class_id_export" required>
+          <!-- Klassenavnene fylles inn her -->
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="exportType" class="form-label">Velg eksporttype</label>
+        <select class="form-select" id="exportType" name="exportType" required>
+          <option value="class">Hele klassen</option>
+          <option value="student">Enkeltelev</option>
+        </select>
+      </div>
+      <div class="mb-3" id="studentSelectExport" style="display:none;">
+        <label for="student_id_export" class="form-label">Velg elev</label>
+        <select class="form-select" name="student_id" id="student_id_export"></select>
+      </div>
+      <button type="button" class="btn btn-outline-info me-2" id="showGraphBtn"><i class="fas fa-chart-bar me-1"></i>Vis utvikling</button>
+      <!-- Modal for graf -->
+      <div id="exportGraphModal" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Visuell graf</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Lukk"></button>
+            </div>
+            <div class="modal-body">
+              <canvas id="exportGraphCanvas" style="width:100%;max-width:700px;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -82,10 +113,15 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // --- Kategorivalg (lagres i localStorage) ---
-const OBS_CATEGORIES = {{ observation_categories|tojson }};
-const OBS_DISPLAY = {{ observation_display|tojson }};
+// Fix for Jinja2 variables in JavaScript
+const OBS_CATEGORIES = JSON.parse('{{ observation_categories|tojson|safe }}');
+const OBS_DISPLAY = JSON.parse('{{ observation_display|tojson|safe }}');
+const classList = JSON.parse('{{ classes|tojson|safe }}');
+const studentList = JSON.parse('{{ students|tojson|safe }}');
+
 function renderCategorySettings() {
   const root = document.getElementById('category-settings');
   root.innerHTML = '';
@@ -148,5 +184,93 @@ function confirmReset() {
     });
   }
 }
+
+// Dynamisk visning av elev/klassevalg basert på eksport/statistikk-type
+function updateExportForm(type, prefix) {
+  document.getElementById('studentSelect' + prefix).style.display = type === 'student' ? '' : 'none';
+  document.getElementById('classSelect' + prefix).style.display = type === 'class' ? '' : 'none';
+}
+
+// Fyll klasser og elever dynamisk (for demo, bruk server-side rendering i prod)
+function populateSelect(selectId, items, valueKey, labelKey) {
+  const select = document.getElementById(selectId);
+  select.innerHTML = '';
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item[valueKey];
+    opt.textContent = item[labelKey];
+    select.appendChild(opt);
+  });
+}
+
+function filterStudentsByClass(classId) {
+  const filtered = studentList.filter(s => s.class_id == classId);
+  populateSelect('student_id_export', filtered, 'id', 'name');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Statistikk
+  var statsType = document.getElementById('statisticsType');
+  if (statsType) {
+    statsType.addEventListener('change', function() {
+      updateExportForm(this.value, 'Stats');
+    });
+  }
+  // Fyll klasse-select for eksport
+  var classSelectExport = document.getElementById('class_id_export');
+  var exportType = document.getElementById('exportType');
+  var studentSelectExport = document.getElementById('studentSelectExport');
+  var showGraphBtn = document.getElementById('showGraphBtn');
+  if (classSelectExport && exportType && studentSelectExport && showGraphBtn) {
+    classSelectExport.innerHTML = '<option value="" disabled selected>Velg klasse</option>';
+    if (Array.isArray(classList) && classList.length > 0) {
+      classList.forEach(cls => {
+        var opt = document.createElement('option');
+        opt.value = cls.id;
+        opt.textContent = cls.name;
+        classSelectExport.appendChild(opt);
+      });
+    } else {
+      var opt = document.createElement('option');
+      opt.value = "";
+      opt.textContent = "Ingen klasser funnet";
+      classSelectExport.appendChild(opt);
+    }
+    exportType.addEventListener('change', function() {
+      if(this.value === 'student') {
+        studentSelectExport.style.display = '';
+        filterStudentsByClass(classSelectExport.value);
+      } else {
+        studentSelectExport.style.display = 'none';
+      }
+    });
+    classSelectExport.addEventListener('change', function() {
+      if(exportType.value === 'student') {
+        filterStudentsByClass(this.value);
+      }
+    });
+    showGraphBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const classId = classSelectExport.value;
+      const type = exportType.value;
+      const studentId = document.getElementById('student_id_export').value;
+      fetchObservationData(classId, studentId, type, function(data) {
+        showExportGraph(data, type);
+      });
+      // Vis modal (Bootstrap 5)
+      const modal = new bootstrap.Modal(document.getElementById('exportGraphModal'));
+      modal.show();
+    });
+  }
+  // Fyll select-bokser for statistikk
+  if (document.getElementById('student_id_stats')) {
+    populateSelect('student_id_stats', studentList, 'id', 'name');
+  }
+  // Initielt skjul for statistikk (kun hvis elementene finnes)
+  if (document.getElementById('studentSelectStats') && document.getElementById('classSelectStats')) {
+    updateExportForm('class', 'Stats');
+  }
+  if (studentSelectExport) studentSelectExport.style.display = 'none';
+});
 </script>
 {% endblock %}

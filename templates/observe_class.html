@@ -79,6 +79,9 @@
       </div>
       <div class="modal-body">
         <div id="observeStudentButtons" class="d-grid gap-2"></div>
+        <button class="btn btn-outline-info btn-sm mt-2 w-100" id="observeShowStatsBtn">
+          <i class="fas fa-chart-line me-1"></i> Vis utvikling
+        </button>
         <button class="btn btn-outline-secondary btn-sm mt-2 w-100" id="observeShowNotesBtn">
           <i class="fas fa-pen me-1"></i> Egne notater
         </button>
@@ -283,6 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.student-card .card-header').forEach(header => {
         header.style.cursor = 'pointer';
         header.addEventListener('click', function() {
+            console.log('Klikk på elevnavn:', this.textContent); // DEBUG
             const card = this.closest('.student-card');
             // Finn studentId og navn på en robust måte
             let studentId = null;

@@ -63,7 +63,7 @@
             {% else %}
                 <h3>Statistikk for alle klasser</h3>
             {% endif %}
-            <div class="table-responsive">
+            <div class="table-responsive" id="statsTableContainer">
                 <table class="table table-striped align-middle" id="statsTable">
                     <thead>
                         <tr>
@@ -134,6 +134,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const maincatButtons = document.querySelectorAll('.filter-maincat');
@@ -166,6 +167,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Download table as PNG
+    document.getElementById('downloadStatsImg').addEventListener('click', function() {
+        const tableContainer = document.getElementById('statsTableContainer');
+        html2canvas(tableContainer).then(function(canvas) {
+            const link = document.createElement('a');
+            link.download = 'statistikk.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    });
 });
 </script>
 {% endblock %}

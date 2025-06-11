@@ -2,7 +2,6 @@
 // Minimal version to avoid blocking form submissions
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Student Engagement Observation App initialized successfully');
 
     // Initialize tooltips if Bootstrap tooltips are present
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

@@ -276,17 +276,31 @@ def record_observation():
         'message': f'Observasjon registrert for {student.name}'
     })
 
-@app.route('/statistics')
+@app.route('/statistics', methods=['GET', 'POST'])
 def statistics():
-    """Show engagement statistics"""
+    """Show engagement statistics for student or class"""
+    from models import Observation, Student, Class
     classes = Class.query.all()
-    selected_class_id = request.args.get('class_id', type=int)
-    if selected_class_id:
-        selected_class = Class.query.get(selected_class_id)
-        students = Student.query.filter_by(class_id=selected_class_id).all()
+    students = Student.query.all()
+    if request.method == 'POST':
+        stats_type = request.form.get('statisticsType', 'class')
+        selected_student_id = request.form.get('student_id')
+        selected_class_id = request.form.get('class_id')
+        if stats_type == 'student' and selected_student_id:
+            students = [Student.query.get(selected_student_id)]
+            selected_class = students[0].class_ref if students[0] else None
+        elif selected_class_id:
+            students = Student.query.filter_by(class_id=selected_class_id).all()
+            selected_class = Class.query.get(selected_class_id)
+        else:
+            selected_class = None
     else:
-        selected_class = None
-        students = Student.query.all()
+        selected_class_id = request.args.get('class_id', type=int)
+        if selected_class_id:
+            selected_class = Class.query.get(selected_class_id)
+            students = Student.query.filter_by(class_id=selected_class_id).all()
+        else:
+            selected_class = None
     # Bygg statistikk for alle underkategorier
     from models import Observation
     # Map for visning
@@ -399,11 +413,21 @@ def export_data():
         })
     return jsonify(data)
 
-@app.route('/export_excel')
+@app.route('/export_excel', methods=['GET', 'POST'])
 def export_excel():
-    """Export all observations to an Excel file"""
+    """Export observations to Excel based on selected type (student/class)"""
     from models import Observation, Student, Class
-    observations = Observation.query.all()
+    export_type = request.form.get('exportType', 'class')
+    selected_student_id = request.form.get('student_id')
+    selected_class_id = request.form.get('class_id')
+    query = Observation.query
+    if export_type == 'student' and selected_student_id:
+        query = query.filter_by(student_id=selected_student_id)
+    elif selected_class_id:
+        students = Student.query.filter_by(class_id=selected_class_id).all()
+        student_ids = [s.id for s in students]
+        query = query.filter(Observation.student_id.in_(student_ids))
+    observations = query.all()
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Observasjoner"
@@ -499,6 +523,9 @@ def change_pin():
 def settings():
     error = None
     success = None
+    from models import Class, Student
+    classes = Class.query.all()
+    students = Student.query.all()
     # PIN-bytte via POST fra settings-siden
     if request.method == 'POST' and 'old_pin' in request.form:
         old_pin = request.form.get('old_pin', '')
@@ -513,6 +540,13 @@ def settings():
         else:
             set_new_pin(new_pin)
             success = 'PIN er endret!'
+    # Serialize classes and students for JS
+    classes_serialized = [
+        {'id': c.id, 'name': c.name} for c in classes
+    ]
+    students_serialized = [
+        {'id': s.id, 'name': s.name, 'class_id': s.class_id} for s in students
+    ]
     return render_template(
         'settings.html',
         observation_categories=OBSERVATION_CATEGORIES,
@@ -539,6 +573,8 @@ def settings():
             'viser_humor': 'Viser humor eller personlig uttrykk',
             'egne_notater': 'Egne notater',
         },
+        classes=classes_serialized,
+        students=students_serialized,
         error=error,
         success=success
     )
