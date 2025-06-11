@@ -1,6 +1,6 @@
-# 🧑‍🏫 TeacherTracker
+# ![Et blikk for eleven](static/app_logo.png)
 
-Et enkelt observasjonsverktøy for lærere som ønsker å registrere elevers engasjement i sanntid.
+Et blikk for eleven er et enkelt observasjonsverktøy for lærere som ønsker å registrere elevers engasjement i sanntid.
 
 ---
 
@@ -15,7 +15,7 @@ Et enkelt observasjonsverktøy for lærere som ønsker å registrere elevers eng
 
 ## 🖼️ Skjermbilde
 
-Her er et glimt av dashboardet i TeacherTracker:
+Her er et glimt av dashboardet i Et blikk for eleven:
 
 ![Skjermbilde av dashboard](static/screenshot.png)
 
