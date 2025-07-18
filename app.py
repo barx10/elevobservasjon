@@ -1,10 +1,9 @@
 import os
 import logging
 from datetime import datetime, date, timedelta
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response, send_file, session
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, session
 from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
-import csv
 import io
 import openpyxl
 
