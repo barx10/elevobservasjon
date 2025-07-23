@@ -170,38 +170,7 @@ def observe_class(class_id):
         'observe_class.html',
         selected_class=selected_class,
         students=students,
-        observation_categories={
-    'faglig_initiativ': [
-        'stiller_sporsmal',
-        'utforsker_tema',
-        'faglige_innspill',
-        'bruker_fagbegreper',
-    ],
-    'sosialt_samspill': [
-        'hjelper_medelever',
-        'samarbeider_i_gruppe',
-        'inkluderer_andre',
-        'viser_empati',
-    ],
-    'selvstendighet_utholdenhet': [
-        'jobber_jevnt',
-        'folger_opp_oppgaver',
-        'fullforer_arbeid',
-        'viser_talmodighet',
-    ],
-    'engasjement_tilstede': [
-        'rekker_opp_handa',
-        'deltar_aktivt',
-        'viser_interesse',
-        'holder_seg_til_fag',
-    ],
-    'kreativitet_fleksibilitet': [
-        'tenker_nytt',
-        'ulike_losninger',
-        'kommer_med_forslag',
-        'viser_humor',
-    ]
-},
+        observation_categories=OBSERVATION_CATEGORIES,
         observation_display={
             'stiller_sporsmal': 'Stiller spørsmål',
             'utforsker_tema': 'Utforsker tema på egen hånd',
@@ -224,7 +193,8 @@ def observe_class(class_id):
             'kommer_med_forslag': 'Kommer med forslag eller ideer',
             'viser_humor': 'Viser humor eller personlig uttrykk',
             'egne_notater': 'Egne notater',
-        }
+        },
+        observation_main_labels=OBSERVATION_MAIN_LABELS
     )
 
 @app.route('/record_observation', methods=['POST'])
@@ -246,6 +216,10 @@ def record_observation():
     
     # --- NY KATEGORIVALIDERING ---
     valid_types = []
+    # Legg til hovedkategorier
+    for hoved in OBSERVATION_CATEGORIES.keys():
+        valid_types.append(hoved)
+    # Legg til underkategorier
     for undercats in OBSERVATION_CATEGORIES.values():
         valid_types.extend(undercats)
     valid_types.append('egne_notater')
@@ -333,16 +307,15 @@ def statistics():
         # Egne notater
         'egne_notater': 'Egne notater',
     }
-    # Bygg stats
+    # Bygg stats for hovedkategorier
     student_stats = []
     for student in students:
         stats = {'student': student}
         total = 0
-        for hoved, under in OBSERVATION_CATEGORIES.items():
-            for underkat in under:
-                count = Observation.query.filter_by(student_id=student.id, observation_type=underkat).count()
-                stats[underkat] = count
-                total += count
+        for hoved in OBSERVATION_CATEGORIES.keys():
+            hoved_count = Observation.query.filter_by(student_id=student.id, observation_type=hoved).count()
+            stats[hoved] = hoved_count
+            total += hoved_count
         stats['total'] = total
         student_stats.append(stats)
     # Sorter på total
@@ -352,7 +325,9 @@ def statistics():
         selected_class=selected_class,
         student_stats=student_stats,
         observation_categories=OBSERVATION_CATEGORIES,
-        observation_display=observation_display)
+        observation_display=observation_display,
+        observation_main_labels=OBSERVATION_MAIN_LABELS
+    )
 
 @app.route('/privacy_info')
 def privacy_info():
@@ -364,17 +339,14 @@ def student_observation_history(student_id):
     """Return time series of all observation types for a student (grouped per day)"""
     from collections import defaultdict
     student = Student.query.get_or_404(student_id)
-    # List of all valid observation types (excluding 'egne_notater')
-    observation_types = [
-        'stiller_sporsmal',
-        'samarbeider_med_andre',
-        'tar_initiativ',
-        'ferdigstiller_oppgaver',
-        'behover_veiledning',
-        'er_distrahert',
-        'viser_glede_interesse',
-        'tilbaketrukket',
-    ]
+    # List of all valid observation types (hovedkategorier + underkategorier, excluding 'egne_notater')
+    observation_types = []
+    # Legg til hovedkategorier
+    for hoved in OBSERVATION_CATEGORIES.keys():
+        observation_types.append(hoved)
+    # Legg til underkategorier
+    for undercats in OBSERVATION_CATEGORIES.values():
+        observation_types.extend(undercats)
     # Query all observations for this student
     observations = Observation.query.filter_by(student_id=student_id).all()
     # Group by date and type
@@ -390,6 +362,25 @@ def student_observation_history(student_id):
         'dates': sorted_dates,
         'series': {k: [data[d][k] for d in sorted_dates] for k in observation_types}
     }
+    return jsonify(result)
+
+@app.route('/student_observation_history/<int:student_id>/notes')
+def student_observation_notes(student_id):
+    """Returner alle egne notater for en elev som liste av dicts med dato og tekst"""
+    student = Student.query.get_or_404(student_id)
+    notes = (
+        Observation.query
+        .filter_by(student_id=student_id, observation_type='egne_notater')
+        .order_by(Observation.timestamp.desc())
+        .all()
+    )
+    result = [
+        {
+            'date': n.timestamp.strftime('%Y-%m-%d %H:%M'),
+            'text': n.notes or ''
+        }
+        for n in notes
+    ]
     return jsonify(result)
 
 @app.route('/export_data')
@@ -635,6 +626,13 @@ OBSERVATION_CATEGORIES = {
         'kommer_med_forslag',
         'viser_humor',
     ]
+}
+OBSERVATION_MAIN_LABELS = {
+    'faglig_initiativ': 'Faglig initiativ',
+    'sosialt_samspill': 'Sosialt samspill',
+    'selvstendighet_utholdenhet': 'Selvstendighet og utholdenhet',
+    'engasjement_tilstede': 'Engasjement og tilstedeværelse',
+    'kreativitet_fleksibilitet': 'Kreativitet og fleksibilitet'
 }
 
 if __name__ == '__main__':

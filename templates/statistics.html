@@ -21,7 +21,7 @@
                 <div class="d-flex flex-wrap justify-content-center gap-2">
                     <button class="btn btn-outline-primary filter-maincat" data-maincat="alle">Alle</button>
                     {% for hoved, under in observation_categories.items() %}
-                        <button class="btn btn-outline-primary filter-maincat" data-maincat="{{ hoved }}">{{ hoved|replace('_', ' ')|title }}</button>
+                        <button class="btn btn-outline-primary filter-maincat" data-maincat="{{ hoved }}">{{ observation_main_labels[hoved] }}</button>
                     {% endfor %}
                 </div>
             </div>
@@ -67,19 +67,12 @@
                 <table class="table table-striped align-middle" id="statsTable">
                     <thead>
                         <tr>
-                            <th rowspan="2">Elev</th>
-                            <th rowspan="2">Klasse</th>
+                            <th>Elev</th>
+                            <th>Klasse</th>
                             {% for hoved, under in observation_categories.items() %}
-                                <th class="text-center maincat-th" data-maincat="{{ hoved }}" colspan="{{ under|length }}">{{ hoved|replace('_', ' ')|title }}</th>
+                                <th class="text-center maincat-th" data-maincat="{{ hoved }}">{{ observation_main_labels[hoved] }}</th>
                             {% endfor %}
-                            <th rowspan="2" class="text-center">Totalt</th>
-                        </tr>
-                        <tr>
-                            {% for hoved, under in observation_categories.items() %}
-                                {% for underkat in under %}
-                                    <th class="text-center small subcat-th" data-maincat="{{ hoved }}">{{ observation_display[underkat] }}</th>
-                                {% endfor %}
-                            {% endfor %}
+                            <th class="text-center">Totalt</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -88,15 +81,13 @@
                                 <td><strong>{{ stats.student.name }}</strong></td>
                                 <td><span class="badge bg-dark">{{ stats.student.class_ref.name }}</span></td>
                                 {% for hoved, under in observation_categories.items() %}
-                                    {% for underkat in under %}
-                                        <td class="text-center subcat-td" data-maincat="{{ hoved }}">
-                                            {% if stats[underkat] > 0 %}
-                                                <span class="badge bg-primary">{{ stats[underkat] }}</span>
-                                            {% else %}
-                                                <span class="text-muted">0</span>
-                                            {% endif %}
-                                        </td>
-                                    {% endfor %}
+                                    <td class="text-center maincat-td" data-maincat="{{ hoved }}">
+                                        {% if stats[hoved] > 0 %}
+                                            <span class="badge bg-primary">{{ stats[hoved] }}</span>
+                                        {% else %}
+                                            <span class="text-muted">0</span>
+                                        {% endif %}
+                                    </td>
                                 {% endfor %}
                                 <td class="text-center"><strong>{{ stats.total }}</strong></td>
                             </tr>
@@ -113,16 +104,14 @@
             <h4>Sammendrag</h4>
         </div>
         {% for hoved, under in observation_categories.items() %}
-            {% for underkat in under %}
-                <div class="col-md-6 col-lg-3 mb-3 summary-card" data-maincat="{{ hoved }}">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h3 class="text-primary">{{ student_stats | sum(attribute=underkat) }}</h3>
-                            <p class="card-text">{{ observation_display[underkat] }}</p>
-                        </div>
+            <div class="col-md-6 col-lg-3 mb-3 summary-card" data-maincat="{{ hoved }}">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 class="text-primary">{{ student_stats | sum(attribute=hoved) }}</h3>
+                        <p class="card-text">{{ observation_main_labels[hoved] }}</p>
                     </div>
                 </div>
-            {% endfor %}
+            </div>
         {% endfor %}
     </div>
 {% else %}

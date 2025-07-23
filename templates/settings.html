@@ -5,17 +5,6 @@
 {% block content %}
 <h1 class="mb-4"><i class="fas fa-cog me-2"></i>Innstillinger</h1>
 
-<!-- Kategorivalg -->
-<div class="card mb-4">
-  <div class="card-header"><strong>Kategorivalg</strong></div>
-  <div class="card-body">
-    <p>Skru av/på hvilke hoved- og underkategorier som skal vises i observasjonsbildet.</p>
-    <div id="category-settings"></div>
-    <button class="btn btn-primary mt-3" onclick="saveCategorySettings()"><i class="fas fa-save me-1"></i>Lagre valg</button>
-    <span id="cat-save-status" class="ms-3 text-success" style="display:none;">Lagret!</span>
-  </div>
-</div>
-
 <!-- Endre PIN -->
 <div class="card mb-4">
   <div class="card-header"><strong>Endre PIN</strong></div>
@@ -44,21 +33,14 @@
 <div class="card mb-4">
   <div class="card-header"><strong>Eksport</strong></div>
   <div class="card-body">
-    <form id="exportForm" method="POST" action="/export_data">
+    <form id="exportForm">
       <div class="mb-3">
         <label for="class_id_export" class="form-label">Velg klasse</label>
         <select class="form-select" name="class_id" id="class_id_export" required>
           <!-- Klassenavnene fylles inn her -->
         </select>
       </div>
-      <div class="mb-3">
-        <label for="exportType" class="form-label">Velg eksporttype</label>
-        <select class="form-select" id="exportType" name="exportType" required>
-          <option value="class">Hele klassen</option>
-          <option value="student">Enkeltelev</option>
-        </select>
-      </div>
-      <div class="mb-3" id="studentSelectExport" style="display:none;">
+      <div class="mb-3" id="studentSelectExport">
         <label for="student_id_export" class="form-label">Velg elev</label>
         <select class="form-select" name="student_id" id="student_id_export"></select>
       </div>
@@ -73,6 +55,8 @@
             </div>
             <div class="modal-body">
               <canvas id="exportGraphCanvas" style="width:100%;max-width:700px;"></canvas>
+              <button class="btn btn-outline-primary mt-3" id="downloadExportGraphBtn"><i class="fas fa-download me-1"></i>Last ned graf</button>
+              <div id="exportNotesArea"></div>
             </div>
           </div>
         </div>
@@ -114,51 +98,88 @@
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-// --- Kategorivalg (lagres i localStorage) ---
-// Fix for Jinja2 variables in JavaScript
-const OBS_CATEGORIES = JSON.parse('{{ observation_categories|tojson|safe }}');
-const OBS_DISPLAY = JSON.parse('{{ observation_display|tojson|safe }}');
-const classList = JSON.parse('{{ classes|tojson|safe }}');
-const studentList = JSON.parse('{{ students|tojson|safe }}');
+// Legg til serialisering av klasser og elever for bruk i JS
+const classList = {{ classes|tojson|safe }};
+const studentList = {{ students|tojson|safe }};
 
-function renderCategorySettings() {
-  const root = document.getElementById('category-settings');
-  root.innerHTML = '';
-  const saved = JSON.parse(localStorage.getItem('category_settings') || '{}');
-  Object.entries(OBS_CATEGORIES).forEach(([hoved, under], i) => {
-    const mainId = 'maincat_' + hoved;
-    const mainChecked = saved[hoved] !== false;
-    const mainDiv = document.createElement('div');
-    mainDiv.className = 'form-check form-switch mb-2';
-    mainDiv.innerHTML = `<input class="form-check-input" type="checkbox" id="${mainId}" ${mainChecked ? 'checked' : ''}>
-      <label class="form-check-label fw-bold" for="${mainId}">${hoved.replace('_',' ').charAt(0).toUpperCase() + hoved.replace('_',' ').slice(1)}</label>`;
-    root.appendChild(mainDiv);
-    // Underkategorier
-    under.forEach(underkat => {
-      const subId = 'subcat_' + underkat;
-      const subChecked = !saved[underkat] === false;
-      const subDiv = document.createElement('div');
-      subDiv.className = 'form-check ms-4';
-      subDiv.innerHTML = `<input class="form-check-input" type="checkbox" id="${subId}" ${subChecked ? 'checked' : ''}>
-        <label class="form-check-label" for="${subId}">${OBS_DISPLAY[underkat]}</label>`;
-      root.appendChild(subDiv);
-    });
-  });
+// Hent observasjonsdata for elev og kall callback med resultatet
+function fetchObservationData(classId, studentId, type, callback) {
+  if (type !== 'student' || !studentId) return;
+  fetch(`/student_observation_history/${studentId}`)
+    .then(response => response.json())
+    .then(data => callback(data))
+    .catch(() => callback(null));
 }
-function saveCategorySettings() {
-  const saved = {};
-  Object.entries(OBS_CATEGORIES).forEach(([hoved, under]) => {
-    saved[hoved] = document.getElementById('maincat_' + hoved).checked;
-    under.forEach(underkat => {
-      saved[underkat] = document.getElementById('subcat_' + underkat).checked;
+
+// Tegn utviklingsgraf for elev i eksportmodalen
+let exportGraphChart = null;
+function showExportGraph(apiData, type, studentId) {
+  const canvas = document.getElementById('exportGraphCanvas');
+  if (!canvas) return;
+  if (exportGraphChart && typeof exportGraphChart.destroy === 'function') {
+    exportGraphChart.destroy();
+  }
+  const ctx = canvas.getContext('2d');
+  // Kun hovedkategorier
+  const mainCats = ['faglig_initiativ','sosialt_samspill','selvstendighet_utholdenhet','engasjement_tilstede','kreativitet_fleksibilitet'];
+  const filteredSeries = {};
+  mainCats.forEach(cat => { if (apiData.series && apiData.series[cat]) filteredSeries[cat] = apiData.series[cat]; });
+  if (!apiData || !apiData.dates || apiData.dates.length === 0 || Object.values(filteredSeries).every(arr => arr.every(v => v === 0))) {
+    exportGraphChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: [], datasets: [] },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'Ingen observasjoner registrert for denne eleven.' }
+        }
+      }
     });
+    document.getElementById('exportNotesArea').innerHTML = '';
+    return;
+  }
+  // Farger og labels for hovedkategorier
+  const typeMeta = {
+    'faglig_initiativ': {label: 'Faglig initiativ', color: '#0d6efd'},
+    'sosialt_samspill': {label: 'Sosialt samspill', color: '#0dcaf0'},
+    'selvstendighet_utholdenhet': {label: 'Selvstendighet og utholdenhet', color: '#198754'},
+    'engasjement_tilstede': {label: 'Engasjement og tilstedeværelse', color: '#ffc107'},
+    'kreativitet_fleksibilitet': {label: 'Kreativitet og fleksibilitet', color: '#dc3545'}
+  };
+  const datasets = mainCats.map(type => ({
+    label: typeMeta[type]?.label || type,
+    data: filteredSeries[type],
+    borderColor: typeMeta[type]?.color || '#888',
+    backgroundColor: (typeMeta[type]?.color || '#888') + '33',
+    tension: 0.3,
+    spanGaps: true,
+    pointRadius: 3,
+    pointHoverRadius: 5
+  }));
+  exportGraphChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: apiData.dates,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true },
+        title: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: 'Antall observasjoner' } },
+        x: { title: { display: true, text: 'Dato' } }
+      }
+    }
   });
-  localStorage.setItem('category_settings', JSON.stringify(saved));
-  document.getElementById('cat-save-status').style.display = '';
-  setTimeout(() => document.getElementById('cat-save-status').style.display = 'none', 1500);
+  // Ikke hent eller vis egne notater
+  document.getElementById('exportNotesArea').innerHTML = '';
 }
-document.addEventListener('DOMContentLoaded', renderCategorySettings);
 
 // --- Tema ---
 const themeSwitch = document.getElementById('themeSwitch');
@@ -169,59 +190,31 @@ if (themeSwitch) {
     localStorage.setItem('theme', this.checked ? 'dark' : 'light');
   });
 }
-// Last valgt tema ved oppstart
 if (localStorage.getItem('theme')) {
   document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme'));
 }
 
-// --- Tilbakestill app ---
-function confirmReset() {
-  if (confirm('Er du sikker på at du vil slette alle data? Dette kan ikke angres.')) {
-    fetch('/reset_app', {method:'POST'}).then(() => {
-      localStorage.clear();
-      document.getElementById('reset-status').style.display = '';
-      setTimeout(() => location.reload(), 1200);
-    });
-  }
-}
-
-// Dynamisk visning av elev/klassevalg basert på eksport/statistikk-type
-function updateExportForm(type, prefix) {
-  document.getElementById('studentSelect' + prefix).style.display = type === 'student' ? '' : 'none';
-  document.getElementById('classSelect' + prefix).style.display = type === 'class' ? '' : 'none';
-}
-
-// Fyll klasser og elever dynamisk (for demo, bruk server-side rendering i prod)
-function populateSelect(selectId, items, valueKey, labelKey) {
-  const select = document.getElementById(selectId);
+function filterStudentsByClass(classId) {
+  const filtered = studentList.filter(s => s.class_id == classId);
+  const select = document.getElementById('student_id_export');
   select.innerHTML = '';
-  items.forEach(item => {
+  filtered.forEach(item => {
     const opt = document.createElement('option');
-    opt.value = item[valueKey];
-    opt.textContent = item[labelKey];
+    opt.value = item.id;
+    opt.textContent = item.name;
     select.appendChild(opt);
   });
 }
 
-function filterStudentsByClass(classId) {
-  const filtered = studentList.filter(s => s.class_id == classId);
-  populateSelect('student_id_export', filtered, 'id', 'name');
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-  // Statistikk
-  var statsType = document.getElementById('statisticsType');
-  if (statsType) {
-    statsType.addEventListener('change', function() {
-      updateExportForm(this.value, 'Stats');
-    });
-  }
-  // Fyll klasse-select for eksport
   var classSelectExport = document.getElementById('class_id_export');
-  var exportType = document.getElementById('exportType');
   var studentSelectExport = document.getElementById('studentSelectExport');
   var showGraphBtn = document.getElementById('showGraphBtn');
-  if (classSelectExport && exportType && studentSelectExport && showGraphBtn) {
+  var downloadExportGraphBtn = document.getElementById('downloadExportGraphBtn');
+  var studentIdExport = document.getElementById('student_id_export');
+
+  // Fyll klasse-select for eksport
+  if (classSelectExport && studentSelectExport && showGraphBtn) {
     classSelectExport.innerHTML = '<option value="" disabled selected>Velg klasse</option>';
     if (Array.isArray(classList) && classList.length > 0) {
       classList.forEach(cls => {
@@ -236,41 +229,49 @@ document.addEventListener('DOMContentLoaded', function() {
       opt.textContent = "Ingen klasser funnet";
       classSelectExport.appendChild(opt);
     }
-    exportType.addEventListener('change', function() {
-      if(this.value === 'student') {
-        studentSelectExport.style.display = '';
-        filterStudentsByClass(classSelectExport.value);
-      } else {
-        studentSelectExport.style.display = 'none';
-      }
-    });
     classSelectExport.addEventListener('change', function() {
-      if(exportType.value === 'student') {
-        filterStudentsByClass(this.value);
-      }
+      filterStudentsByClass(this.value);
     });
+  }
+  if (showGraphBtn) {
     showGraphBtn.addEventListener('click', function(e) {
       e.preventDefault();
+      if (!studentIdExport.value) return;
       const classId = classSelectExport.value;
-      const type = exportType.value;
-      const studentId = document.getElementById('student_id_export').value;
-      fetchObservationData(classId, studentId, type, function(data) {
-        showExportGraph(data, type);
+      const studentId = studentIdExport.value;
+      fetchObservationData(classId, studentId, 'student', function(data) {
+        showExportGraph(data, 'student', studentId);
       });
       // Vis modal (Bootstrap 5)
       const modal = new bootstrap.Modal(document.getElementById('exportGraphModal'));
       modal.show();
     });
   }
-  // Fyll select-bokser for statistikk
-  if (document.getElementById('student_id_stats')) {
-    populateSelect('student_id_stats', studentList, 'id', 'name');
+  if (downloadExportGraphBtn) {
+    downloadExportGraphBtn.addEventListener('click', function() {
+      const canvas = document.getElementById('exportGraphCanvas');
+      if (!canvas) return;
+      // Lag et nytt, større canvas for eksport
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = 800;
+      exportCanvas.height = 400;
+      const ctx = exportCanvas.getContext('2d');
+      // Hvit bakgrunn
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      // Skaler original canvas inn i eksport-canvas
+      ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+      const url = exportCanvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `elevutvikling_${studentIdExport.options[studentIdExport.selectedIndex].textContent.replace(/\s+/g, '_')}.png`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
   }
-  // Initielt skjul for statistikk (kun hvis elementene finnes)
-  if (document.getElementById('studentSelectStats') && document.getElementById('classSelectStats')) {
-    updateExportForm('class', 'Stats');
-  }
-  if (studentSelectExport) studentSelectExport.style.display = 'none';
+  if (studentSelectExport) studentSelectExport.style.display = '';
 });
 </script>
 {% endblock %}

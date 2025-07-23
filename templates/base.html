@@ -18,6 +18,7 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <!-- Manifest for PWA -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
     <meta name="theme-color" content="#1a237e">
 </head>
 <body>
@@ -111,5 +112,12 @@
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     
     {% block scripts %}{% endblock %}
+    <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/static/service-worker.js');
+      });
+    }
+    </script>
 </body>
 </html>
