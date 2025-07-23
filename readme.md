@@ -1,4 +1,4 @@
-# Et blikk for eleven
+# ![Et blikk for eleven](static/app_logo.png)
 
 **Et blikk for eleven** er et brukervennlig, 100% offline observasjonsverktøy for lærere. Appen lar deg registrere og følge opp elevengasjement og deltakelse – helt uten at sensitive data forlater din egen maskin.
 
