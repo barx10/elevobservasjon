@@ -47,7 +47,7 @@ Her er et glimt av dashboardet i Et blikk for eleven:
 ## 📱 Bruk som PWA
 - Åpne appen i Chrome/Edge på PC eller mobil.
 - Velg «Legg til på Hjem-skjerm»/«Installer» fra nettlesermenyen.
-- Appen fungerer offline og kan brukes uten nett.
+- Appen fungerer offline og kan brukes uten nett så lenge mobil og PC er koblet på samme nett. Grunnen er at du starter appen på PC-en om morgenen, men kan bruke mobil til å observere hvis du ikke bruker PC.
 
 ---
 
