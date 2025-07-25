@@ -1,10 +1,9 @@
 import os
 import logging
 from datetime import datetime, date, timedelta
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response, send_file, session
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, session
 from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
-import csv
 import io
 import openpyxl
 
@@ -48,9 +47,6 @@ def index():
 def manage_classes():
     """Manage classes and students"""
     classes = Class.query.all()
-    print(f"DEBUG: Found {len(classes)} classes in database")
-    for cls in classes:
-        print(f"DEBUG: Class: {cls.name} (ID: {cls.id})")
     selected_class_id = request.args.get('class_id', type=int)
     selected_class = None
     if selected_class_id:
@@ -61,7 +57,6 @@ def manage_classes():
 def add_class():
     """Add a new class"""
     class_name = request.form.get('class_name', '').strip()
-    print(f"DEBUG: Attempting to add class: '{class_name}'")
     
     if not class_name:
         flash('Klassenavn er påkrevd', 'error')
@@ -70,7 +65,6 @@ def add_class():
     # Check if class already exists
     existing_class = Class.query.filter_by(name=class_name).first()
     if existing_class:
-        print(f"DEBUG: Class '{class_name}' already exists")
         flash('Klassen eksisterer allerede', 'error')
         return redirect(url_for('manage_classes'))
     
@@ -78,10 +72,8 @@ def add_class():
         new_class = Class(name=class_name)
         db.session.add(new_class)
         db.session.commit()
-        print(f"DEBUG: Successfully added class '{class_name}'")
         flash(f'Klasse "{class_name}" ble lagt til', 'success')
     except Exception as e:
-        print(f"DEBUG: Error adding class: {e}")
         db.session.rollback()
         flash('Feil ved lagring av klasse', 'error')
     
@@ -92,10 +84,8 @@ def add_student():
     """Add a student to a class"""
     class_id = request.form.get('class_id')
     student_name = request.form.get('student_name', '').strip()
-    print(f"DEBUG: Attempting to add student '{student_name}' to class {class_id}")
     
     if not class_id or not student_name:
-        print(f"DEBUG: Missing data - class_id: {class_id}, student_name: '{student_name}'")
         flash('Klasse og elevnavn er påkrevd', 'error')
         return redirect(url_for('manage_classes', class_id=class_id))
     
@@ -106,7 +96,6 @@ def add_student():
     ).first()
     
     if existing_student:
-        print(f"DEBUG: Student '{student_name}' already exists in class {class_id}")
         flash('Eleven eksisterer allerede i denne klassen', 'error')
         return redirect(url_for('manage_classes', class_id=class_id))
     
@@ -114,10 +103,8 @@ def add_student():
         new_student = Student(name=student_name, class_id=class_id)
         db.session.add(new_student)
         db.session.commit()
-        print(f"DEBUG: Successfully added student '{student_name}' to class {class_id}")
         flash(f'Elev "{student_name}" ble lagt til', 'success')
     except Exception as e:
-        print(f"DEBUG: Error adding student: {e}")
         db.session.rollback()
         flash('Feil ved lagring av elev', 'error')
     
@@ -206,10 +193,10 @@ def record_observation():
     notes = request.form.get('notes', '').strip()
 
     # Slett observasjoner eldre enn 30 dager
-    cutoff_date = datetime.now() - timedelta(days=30)
-    deleted = Observation.query.filter(Observation.timestamp < cutoff_date).delete()
-    if deleted:
-        db.session.commit()
+    # cutoff_date = datetime.now() - timedelta(days=30)
+    # deleted = Observation.query.filter(Observation.timestamp < cutoff_date).delete()
+    # if deleted:
+    #     db.session.commit()
 
     if not student_id or not observation_type:
         return jsonify({'success': False, 'message': 'Manglende data'})

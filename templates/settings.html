@@ -206,6 +206,24 @@ function filterStudentsByClass(classId) {
   });
 }
 
+function confirmReset() {
+    if (confirm('Er du sikker på at du vil slette alle data og tilbakestille appen? Dette kan ikke angres.')) {
+        fetch('/reset_app', {method: 'POST'})
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('reset-status').style.display = '';
+                    setTimeout(() => {
+                        document.getElementById('reset-status').style.display = 'none';
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    alert('Noe gikk galt. Prøv igjen.');
+                }
+            })
+            .catch(() => alert('Noe gikk galt. Prøv igjen.'));
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var classSelectExport = document.getElementById('class_id_export');
   var studentSelectExport = document.getElementById('studentSelectExport');
