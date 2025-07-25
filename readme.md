@@ -5,8 +5,8 @@
 ---
 
 ## 🔒 Personvern og sikkerhet
-- **All data lagres kun lokalt** på din datamaskin. Ingenting sendes til internett eller eksterne servere.
-- Appen kan brukes trygt til sensitive elevobservasjoner.
+- **All data lagres kun lokalt** på din datamaskin. Ingenting sendes til internett eller eksterne servere og det er innlogging med kode.
+- Appen kan brukes trygt til elevobservasjoner.
 - Kan installeres som PWA på mobil og PC for enkel tilgang og offline-bruk.
 
 ---
