@@ -44,11 +44,15 @@ Du må ha [Python](https://www.python.org/downloads/) installert.
 3. **Installer det appen trenger**  
    ```bash
    pip install -r requirements.txt
-3. **Kjør appen**
+   
+4. **Kjør appen**
    ```
    python app.py
    ```
-4. **Åpne i nettleseren** på [http://127.0.0.1:5000](http://127.0.0.1:5000)
+5. **Åpne i nettleseren** på [http://127.0.0.1:5000](http://127.0.0.1:5000)
+
+6. **Stoppe appen** Trykk Ctrl + C i kommandovinduet.
+   
 
 ---
 
