@@ -31,11 +31,19 @@ Her er et glimt av dashboardet i Et blikk for eleven:
 
 ## 🧪 Kom i gang
 
-1. **Klon repoet eller last ned ZIP** (Trykk CODE > Download ZIP)
-2. **Installer avhengigheter**
-   ```
+Denne veiledningen viser deg hvordan du laster ned og kjører appen på din egen PC.  
+Du må ha [Python](https://www.python.org/downloads/) installert.
+
+1. **Last ned appen**  
+   Klikk på den grønne **Code**-knappen øverst, velg **Download ZIP** og pakk ut filen.
+
+2. **Åpne kommandovindu i riktig mappe**  
+   - **Windows**: Finn mappen du lastet ned appen, hold inne **Shift**, høyreklikk og velg **Åpne PowerShell/Kommandovindu her**  
+   - **Mac**: Høyreklikk mappen og velg **Åpne i Terminal**
+
+3. **Installer det appen trenger**  
+   ```bash
    pip install -r requirements.txt
-   ```
 3. **Kjør appen**
    ```
    python app.py
