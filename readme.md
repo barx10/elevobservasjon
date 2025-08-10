@@ -38,7 +38,7 @@ Du må ha [Python](https://www.python.org/downloads/) installert.
    Klikk på den grønne **Code**-knappen øverst, velg **Download ZIP** og pakk ut filen.
 
 2. **Åpne kommandovindu i riktig mappe**  
-   - **Windows**: Finn mappen du lastet ned appen, hold inne **Shift**, høyreklikk og velg **Åpne PowerShell/Kommandovindu her**  
+   - **Windows**: Finn mappen du lastet ned appen, hold inne **Shift**, høyreklikk og velg **Åpne PowerShell/Kommandovindu (CMD) her**  
    - **Mac**: Høyreklikk mappen og velg **Åpne i Terminal**
 
 3. **Installer det appen trenger**  
